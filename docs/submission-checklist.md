@@ -20,7 +20,7 @@
 
 | 项目 | 当前状态 | 关闭条件 |
 | --- | --- | --- |
-| fork 开发分支 | 本轮开始时 VM 与 fork 的 `feat/shihe-mvp` 均为 `8ca2079`；最终定版功能提交为 `9d14c3a`，文档提交尚待完成 | 两个 Signed-off-by 提交推送后核对 fork HEAD |
+| fork 开发分支 | 最终定版功能提交为 `9d14c3a`，文档提交为 `8ec7fc2`；两者均含 Signed-off-by 并已推送，fork HEAD 为 `8ec7fc2` | 用户界面审核后只追加必要修订与最终发布提交 |
 | Signed-off-by | 当前 RC1 提交含 `AuroraZW <3053750681@qq.com>` | 最终新增提交继续使用 `git commit -s` |
 | 最终 PR | 尚未发起 | PDF、界面与稳定性通过后发向团队专属仓 `dev-ai-contest-2026` |
 | CLA / CI | 预检阶段已签署并通过；最终 PR 尚未检查 | 最终 PR 的 checks 与 `cla/signature` 全绿 |

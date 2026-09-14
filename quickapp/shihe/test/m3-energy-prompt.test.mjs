@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
-import { emptyState, defaultMealWindows, validateState } from '../src/common/state.js'
+import { emptyState, defaultMealWindows, validateState, editableDailyTarget, isLowDailyTarget, TARGET_EDITOR_MIN_KCAL, TARGET_EDITOR_MAX_KCAL, TARGET_EDITOR_STEP_KCAL } from '../src/common/state.js'
 import { FOODS } from '../src/data/foods.js'
 import {
   EXERCISE_ACTIVITIES, calculateExerciseKcal, createExerciseRecord, editExerciseRecord,
-  upsertExercise, deleteExercise, dailyEnergySummary, sevenDayEnergyTrend, retainRecentLocalDays
+  upsertExercise, deleteExercise, dailyEnergySummary, sevenDayEnergyTrend, sevenDayDietSummary, retainRecentLocalDays
 } from '../src/common/energy-domain.js'
 import { activeMealType, mealCapsuleView, setActiveMealLater, skipActiveMeal } from '../src/common/meal-domain.js'
 
@@ -14,6 +14,15 @@ function localAt(year, month, day, hour, minute) {
 function meal(id, localDate, mealType, kcal) {
   return { id, localDate, mealType, totalKcalSnapshot: kcal }
 }
+
+assert.equal(TARGET_EDITOR_MIN_KCAL, 1200)
+assert.equal(TARGET_EDITOR_MAX_KCAL, 4000)
+assert.equal(TARGET_EDITOR_STEP_KCAL, 100)
+assert.equal(editableDailyTarget(800), 1200)
+assert.equal(editableDailyTarget(5000), 4000)
+assert.equal(editableDailyTarget(2050), 2100)
+assert.equal(isLowDailyTarget(1400), true)
+assert.equal(isLowDailyTarget(1500), false)
 
 assert.deepEqual(EXERCISE_ACTIVITIES.map(item => [item.id, item.name, item.met]), [
   ['brisk_walk', '快走', 3.5], ['run', '跑步', 8], ['cycle', '骑行', 6.8],
@@ -37,9 +46,9 @@ assert.equal(edited.kcalSnapshot, 336)
 
 const meals = [meal('breakfast', '2026-09-10', 'breakfast', 500), meal('lunch', '2026-09-10', 'lunch', 700)]
 let exercises = upsertExercise([], walk)
-assert.deepEqual(dailyEnergySummary(meals, exercises, '2026-09-10', 2000), { intakeKcal: 1200, exerciseKcal: 110, netKcal: 1090, intakeTargetDeltaKcal: 800 })
+assert.deepEqual(dailyEnergySummary(meals, exercises, '2026-09-10', 2000), { intakeKcal: 1200, exerciseKcal: 110, netKcal: 1090, intakeTargetDeltaKcal: 800, intakeProgressPercent: 60, mainMealRecordedCount: 2, foodVarietyCount: 0 })
 exercises = upsertExercise(exercises, edited)
-assert.deepEqual(dailyEnergySummary(meals, exercises, '2026-09-10', 1000), { intakeKcal: 1200, exerciseKcal: 336, netKcal: 864, intakeTargetDeltaKcal: -200 })
+assert.deepEqual(dailyEnergySummary(meals, exercises, '2026-09-10', 1000), { intakeKcal: 1200, exerciseKcal: 336, netKcal: 864, intakeTargetDeltaKcal: -200, intakeProgressPercent: 120, mainMealRecordedCount: 2, foodVarietyCount: 0 })
 assert.equal(dailyEnergySummary(meals, exercises, '2026-09-10', 2000).intakeTargetDeltaKcal, 800, '新增运动不得改变饮食目标差值')
 const run2 = Object.assign({}, edited, { id: 'run-2', kcalSnapshot: 84, durationMinutes: 10 })
 exercises = upsertExercise(exercises, run2)
@@ -54,6 +63,16 @@ assert.equal(trend[1].exerciseKcal, 0)
 assert.equal(trend[6].netKcal, 416)
 const monthTrend = sevenDayEnergyTrend([], [], '2026-03-03', 1800)
 assert.deepEqual(monthTrend.map(day => day.localDate), ['2026-02-25', '2026-02-26', '2026-02-27', '2026-02-28', '2026-03-01', '2026-03-02', '2026-03-03'])
+const weekMeals = [
+  Object.assign(meal('week-old', '2026-09-04', 'dinner', 300), { items: [{ foodId: 'staple-rice' }, { foodId: 'protein-egg' }] }),
+  Object.assign(meal('week-today', '2026-09-10', 'lunch', 500), { items: [{ foodId: 'staple-rice' }, { foodId: 'dish-tomato-egg' }] }),
+  Object.assign(meal('outside', '2026-09-03', 'lunch', 900), { items: [{ foodId: 'fruit-apple' }] })
+]
+assert.deepEqual(sevenDayDietSummary(weekMeals, '2026-09-10'), { recordedDays: 2, averageIntakeKcal: 400, foodVarietyCount: 3 })
+assert.deepEqual(sevenDayDietSummary([], '2026-09-10'), { recordedDays: 0, averageIntakeKcal: 0, foodVarietyCount: 0 })
+const ringSummary = dailyEnergySummary([Object.assign(meal('ring', '2026-09-10', 'lunch', 500), { items: [{ foodId: 'staple-rice' }, { foodId: 'staple-rice' }, { foodId: 'protein-egg' }] })], [], '2026-09-10', 2000)
+assert.equal(ringSummary.mainMealRecordedCount, 1)
+assert.equal(ringSummary.foodVarietyCount, 2)
 
 const retentionState = emptyState()
 retentionState.meals = [meal('today', '2026-09-10', 'lunch', 1), meal('day-29', '2026-08-12', 'lunch', 1), meal('day-30', '2026-08-11', 'lunch', 1), meal('future', '2026-09-11', 'lunch', 1)]

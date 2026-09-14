@@ -104,10 +104,28 @@ export function deleteExercise(exercises, id) {
 }
 
 export function dailyEnergySummary(meals, exercises, localDate, dailyTargetKcal) {
-  const intakeKcal = (meals || []).filter(item => item.localDate === localDate).reduce((sum, item) => sum + item.totalKcalSnapshot, 0)
+  const dayMeals = (meals || []).filter(item => item.localDate === localDate)
+  const intakeKcal = dayMeals.reduce((sum, item) => sum + item.totalKcalSnapshot, 0)
   const exerciseKcal = (exercises || []).filter(item => item.localDate === localDate).reduce((sum, item) => sum + item.kcalSnapshot, 0)
   const netKcal = intakeKcal - exerciseKcal
-  return { intakeKcal, exerciseKcal, netKcal, intakeTargetDeltaKcal: dailyTargetKcal - intakeKcal }
+  const mealTypes = []
+  const foodIds = []
+  dayMeals.forEach(function (meal) {
+    if (['breakfast', 'lunch', 'dinner'].includes(meal.mealType) && !mealTypes.includes(meal.mealType)) mealTypes.push(meal.mealType)
+    ;(meal.items || []).forEach(function (item) {
+      if (item && item.foodId && !foodIds.includes(item.foodId)) foodIds.push(item.foodId)
+    })
+  })
+  const intakeProgressPercent = dailyTargetKcal > 0 ? Math.max(0, Math.round(intakeKcal * 100 / dailyTargetKcal)) : 0
+  return {
+    intakeKcal,
+    exerciseKcal,
+    netKcal,
+    intakeTargetDeltaKcal: dailyTargetKcal - intakeKcal,
+    intakeProgressPercent,
+    mainMealRecordedCount: mealTypes.length,
+    foodVarietyCount: foodIds.length
+  }
 }
 
 export function sevenDayEnergyTrend(meals, exercises, todayLocalDate, dailyTargetKcal) {
@@ -118,6 +136,27 @@ export function sevenDayEnergyTrend(meals, exercises, todayLocalDate, dailyTarge
     result.push(Object.assign({ localDate }, dailyEnergySummary(meals, exercises, localDate, dailyTargetKcal)))
   }
   return result
+}
+
+export function sevenDayDietSummary(meals, todayLocalDate) {
+  if (!parseLocalDate(todayLocalDate)) return { recordedDays: 0, averageIntakeKcal: 0, foodVarietyCount: 0 }
+  const firstDate = shiftLocalDate(todayLocalDate, -6)
+  const dayTotals = {}
+  const foodIds = []
+  ;(meals || []).forEach(function (meal) {
+    if (!meal || meal.localDate < firstDate || meal.localDate > todayLocalDate) return
+    dayTotals[meal.localDate] = (dayTotals[meal.localDate] || 0) + meal.totalKcalSnapshot
+    ;(meal.items || []).forEach(function (item) {
+      if (item && item.foodId && !foodIds.includes(item.foodId)) foodIds.push(item.foodId)
+    })
+  })
+  const dates = Object.keys(dayTotals)
+  const total = dates.reduce(function (sum, localDate) { return sum + dayTotals[localDate] }, 0)
+  return {
+    recordedDays: dates.length,
+    averageIntakeKcal: dates.length ? Math.round(total / dates.length) : 0,
+    foodVarietyCount: foodIds.length
+  }
 }
 
 function pendingPromptState(localDate) {

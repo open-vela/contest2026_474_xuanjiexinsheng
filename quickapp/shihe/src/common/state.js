@@ -1,4 +1,19 @@
 export const STATE_SCHEMA_VERSION = 1
+export const DEFAULT_DAILY_TARGET_KCAL = 2000
+export const TARGET_EDITOR_MIN_KCAL = 1200
+export const TARGET_EDITOR_MAX_KCAL = 4000
+export const TARGET_EDITOR_STEP_KCAL = 100
+export const LOW_TARGET_WARNING_KCAL = 1500
+
+export function editableDailyTarget(value) {
+  const input = finiteNumber(Number(value)) ? Number(value) : DEFAULT_DAILY_TARGET_KCAL
+  const rounded = Math.round(input / TARGET_EDITOR_STEP_KCAL) * TARGET_EDITOR_STEP_KCAL
+  return Math.max(TARGET_EDITOR_MIN_KCAL, Math.min(TARGET_EDITOR_MAX_KCAL, rounded))
+}
+
+export function isLowDailyTarget(value) {
+  return finiteNumber(Number(value)) && Number(value) < LOW_TARGET_WARNING_KCAL
+}
 
 export function defaultMealWindows() {
   return {

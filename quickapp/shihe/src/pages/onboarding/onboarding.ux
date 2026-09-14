@@ -2,7 +2,7 @@
   <div class="page">
     <scroll class="content" scroll-y="true">
       <text class="title">首次设置</text>
-      <text class="subtitle">只需体重、饮食目标与餐段</text>
+      <text class="subtitle">只需体重、饮食参考与餐段</text>
 
       <div class="warning" if="{{storageStatus === 'corrupt'}}">
         <text class="warning-text">检测到损坏的本地数据，只有确认重建后才会覆盖。</text>
@@ -19,11 +19,13 @@
       </div>
 
       <div class="card">
-        <text class="label">每日饮食目标</text>
+        <text class="label">每日饮食参考目标</text>
         <text class="number orange">{{targetKcal}} kcal</text>
-        <text class="target-help">一天计划从食物中摄入的热量，不是运动消耗目标。</text>
-        <text class="target-note">默认参考值为 2000 kcal，可按自己的情况调整。</text>
-        <slider min="800" max="5000" step="50" value="{{targetKcal}}" onchange="changeTarget"></slider>
+        <text class="target-help">计划从食物中摄入的参考值，不是运动消耗任务，也不要求必须吃满。</text>
+        <text class="target-note">默认 2000 kcal；可在 1200–4000 kcal 间调整。</text>
+        <slider min="1200" max="4000" step="100" value="{{targetKcal}}" onchange="changeTarget"></slider>
+        <text class="target-warning" if="{{lowTarget}}">目标较低，建议在专业人员指导下设置。</text>
+        <text class="target-notice" if="{{targetAdjustmentNotice}}">{{targetAdjustmentNotice}}</text>
       </div>
 
       <div class="card">
@@ -48,7 +50,7 @@
 <script>
 import router from '@system.router'
 import { FOODS } from '../../data/foods'
-import { defaultMealWindows, createOnboardedState, validateState } from '../../common/state'
+import { defaultMealWindows, createOnboardedState, validateState, editableDailyTarget, isLowDailyTarget } from '../../common/state'
 import { loadState, saveState } from '../../common/state-store'
 
 const validateStoredState = state => validateState(state, FOODS)
@@ -66,6 +68,8 @@ export default {
     weightLabel: '请滑动',
     weightConfirmed: false,
     targetKcal: 2000,
+    lowTarget: false,
+    targetAdjustmentNotice: '',
     windows: defaultMealWindows(),
     accepted: false,
     rebuildConfirmed: false,
@@ -81,7 +85,9 @@ export default {
         this.weightValue = profile.weightKg
         this.weightLabel = String(profile.weightKg)
         this.weightConfirmed = true
-        this.targetKcal = profile.dailyTargetKcal
+        this.targetKcal = editableDailyTarget(profile.dailyTargetKcal)
+        this.lowTarget = isLowDailyTarget(this.targetKcal)
+        this.targetAdjustmentNotice = this.targetKcal === profile.dailyTargetKcal ? '' : '原目标超出当前编辑范围；只有保存后才会更新。'
         this.windows = profile.mealWindows
         this.accepted = true
         this.storageStatus = 'ok'
@@ -91,7 +97,7 @@ export default {
     })
   },
   changeWeight(event) { this.weightValue = event.progress; this.weightLabel = String(event.progress); this.weightConfirmed = true },
-  changeTarget(event) { this.targetKcal = event.progress },
+  changeTarget(event) { this.targetKcal = event.progress; this.lowTarget = isLowDailyTarget(event.progress); this.targetAdjustmentNotice = '' },
   changeAccepted(event) { this.accepted = event.checked === true },
   confirmRebuild(event) { this.rebuildConfirmed = event.checked === true },
   setTime(meal, edge, event) {
@@ -150,6 +156,8 @@ export default {
 .notice { color: #aaa8a1; font-size: 16px; line-height: 24px; margin-bottom: 11px; }
 .target-help { color: #c7c4bc; font-size: 16px; line-height: 23px; margin-bottom: 5px; }
 .target-note { color: #858681; font-size: 14px; line-height: 21px; margin-bottom: 8px; }
+.target-warning { color: #d3a06f; font-size: 15px; line-height: 22px; margin-top: 8px; }
+.target-notice { color: #8fa4b8; font-size: 14px; line-height: 21px; margin-top: 7px; }
 .error { text-align: center; margin: 4px 0 11px 0; }
 .primary { width: 100%; height: 58px; border-radius: 29px; background-color: #f28a32; color: #17120e; font-size: 21px; font-weight: bold; }
 .bottom-space { height: 34px; }

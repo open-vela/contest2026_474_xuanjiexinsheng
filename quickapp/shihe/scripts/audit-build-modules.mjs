@@ -92,7 +92,10 @@ for (const file of sourcePageFiles) {
     assert.match(source, /由 service\.health 自动读取；比赛模拟器中为官方 Mock/, 'home.ux 必须说明健康数据自动读取与比赛 Mock 来源')
     assert.match(source, /仅展示，不用于热量计算或诊断/, 'home.ux 必须声明健康数据用途边界')
     assert.match(source, /今日已摄入/, 'home.ux 必须以今日食物摄入为主指标')
-    assert.match(source, /每日饮食目标/, 'home.ux 必须解释饮食目标')
+    assert.match(source, /每日饮食参考目标/, 'home.ux 必须解释饮食参考目标')
+    assert.match(source, /食衡三环/, 'home.ux 必须展示三环记录指标')
+    assert.match(source, /mainMealRecordedCount/, 'home.ux 必须展示正餐记录进度')
+    assert.match(source, /foodVarietyCount/, 'home.ux 必须展示食品多样性进度')
     assert.match(source, /手动补录运动/, 'home.ux 必须明确运动消耗来自手动补录')
     assert.match(source, /估算净摄入/, 'home.ux 必须把净摄入标为估算')
     assert.match(source, /今日小建议/, 'home.ux 必须始终保留本地建议卡')
@@ -113,6 +116,9 @@ for (const file of sourcePageFiles) {
     assert.match(source, /一句话记餐/, 'meal.ux 必须提供一句话入口')
     assert.match(source, /快捷选择/, 'meal.ux 必须保留快捷选择备用入口')
     assert.match(source, /识别这顿饭/, 'meal.ux 必须提供清晰的识别主操作')
+    assert.match(source, /全部（60）/, 'meal.ux 必须提供完整 60 项目录入口')
+    assert.match(source, /removeDraft/, 'meal.ux 必须允许在确认前移除误选食品')
+    assert.match(source, /MEAL_TEMPLATES/, 'meal.ux 必须接入常见套餐模板')
   }
 }
 

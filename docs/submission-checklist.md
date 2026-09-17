@@ -1,6 +1,6 @@
 # 食衡官方提交要求检查表
 
-更新日期：2026-09-12
+更新日期：2026-09-17
 
 本表依据比赛分支的[《大赛总览》](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/contest_overview.md#L87-L121)、[《参赛代码提交指南》](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/code_submission_guide.md#L51-L75)、[《快应用手动开发指南》](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/quickapp/quickapp_manual.md#L231-L243)和[《AI Coding 日志归集与提交手册》](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/ai_coding_log_guide.md#L263-L300)核对。状态只记录已经验证的事实。
 
@@ -20,7 +20,7 @@
 
 | 项目 | 当前状态 | 关闭条件 |
 | --- | --- | --- |
-| fork 开发分支 | 最终定版功能提交为 `9d14c3a`，文档提交为 `8ec7fc2`；两者均含 Signed-off-by 并已推送，fork HEAD 为 `8ec7fc2` | 用户界面审核后只追加必要修订与最终发布提交 |
+| fork 开发分支 | 远程基线为 `65cf5db`；最终可用性修订正在本分支收口 | 新版 debug RPK、截图审核与文档核对后使用 Signed-off-by 提交并推送 |
 | Signed-off-by | 当前 RC1 提交含 `AuroraZW <3053750681@qq.com>` | 最终新增提交继续使用 `git commit -s` |
 | 最终 PR | 尚未发起 | PDF、界面与稳定性通过后发向团队专属仓 `dev-ai-contest-2026` |
 | CLA / CI | 预检阶段已签署并通过；最终 PR 尚未检查 | 最终 PR 的 checks 与 `cla/signature` 全绿 |
@@ -30,12 +30,12 @@
 
 ## 3. 发布质量门禁
 
-- [x] P0 主闭环：设置、餐时胶囊、记餐、修改、删除、能量回算、运动补录、历史。
+- [x] P0 主闭环：设置、餐时胶囊、一句话/快捷记餐、确认、修改、删除、摄入回算和最近 7 天。
 - [x] 断网或 VelaClaw 不可用时，本地建议和主流程继续工作。
 - [x] `service.health` 官方 Mock 成功路径与普通镜像不支持路径均已验证。
-- [x] 历史 RC1 production RPK 通过 package/version、CERT、ZIP、七页面 bundle 和秘密扫描。
+- [x] 历史 RC1 production RPK 通过 package/version、CERT、ZIP、当时版本 bundle 和秘密扫描；不作为最终交付包。
 - [ ] 最终定版 production RPK 重新生成，并通过同等审计与双模拟器复测。
-- [x] 运动数据明确为手动补录和 MET 估算，不宣称系统自动同步。
+- [x] 已删除手动运动补录和净摄入；当前无可靠系统步数/运动记录/活动热量接口，不伪造自动同步。
 - [ ] 用户逐页审核当前功能、文案和苹果式极简视觉。
 - [ ] 使用页面标题识别重新执行有效的 20 分钟稳定性回归；前一版只检查截图大小且误滑出应用，已作废。
 - [ ] VelaClaw 有 Key 成功路径由用户私下验证；此项失败不阻塞 P0 发布。
@@ -45,7 +45,7 @@
 ## 4. 安全、版权与范围
 
 - [x] 根 `LICENSE` 为 Apache License 2.0。
-- [x] `THIRD_PARTY_NOTICES.md` 说明食品参考值、产品默认配方和 MET 常量边界。
+- [x] `THIRD_PARTY_NOTICES.md` 说明食品参考值、产品默认配方和使用边界。
 - [x] Git 跟踪文件和 RPK 不包含高置信度 `tp-`、`sk-` 或私钥头。
 - [x] `sign/`、`node_modules/`、`build/`、`dist/` 和本地临时目录不入仓。
 - [x] 不提交个人健康原始数据；健康 Mock 不外推为真机数据。

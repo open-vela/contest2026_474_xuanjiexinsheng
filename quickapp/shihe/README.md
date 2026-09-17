@@ -13,7 +13,7 @@ npm run build
 ```
 
 - `npm test`：运行食品解析、餐食、能量、提醒、健康、VelaClaw 和路由降级测试。
-- `npm run build`：生成 debug RPK，并审计七个页面 bundle。
+- `npm run build`：生成 debug RPK，并审计六个页面 bundle。
 - `npm run release`：使用本地 `sign/` 目录中的签名材料生成 production RPK。
 
 `node_modules/`、`build/`、`dist/`、`sign/` 和 debug RPK 均被忽略。不要提交签名私钥、API Key 或 Token；比赛生产包只复制到 `releases/`。

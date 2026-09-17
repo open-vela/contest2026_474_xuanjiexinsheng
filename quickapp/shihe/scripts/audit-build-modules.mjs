@@ -82,8 +82,10 @@ for (const file of sourcePageFiles) {
   assert.ok(!(hasData && hasAccessFields), path.relative(process.cwd(), file) + ' 不得混用 data 与访问器字段')
   if (path.basename(file) === 'history.ux') {
     assert.match(source, /\bfor="\(index, day\) in days"/, 'history.ux 必须使用显式 day 循环变量')
-    assert.match(source, /餐食摄入/, 'history.ux 必须明确餐食摄入来源')
-    assert.match(source, /手动补录/, 'history.ux 必须明确手动补录运动消耗来源')
+    assert.match(source, /最近 7 天饮食记录/, 'history.ux 必须明确是饮食记录')
+    assert.match(source, /有记录日平均 kcal/, 'history.ux 必须展示有记录日平均摄入')
+    assert.match(source, /已记录 \{\{day\.mealCount\}\} 餐/, 'history.ux 必须展示每日记录餐数')
+    assert.doesNotMatch(source, /手动补录|估算净摄入|食品种类/, 'history.ux 不得保留已移除指标')
   }
   if (path.basename(file) === 'home.ux') {
     assert.match(source, /\$canIUse\('@service\.health'\)/, 'home.ux 必须在订阅前探测 service.health 能力')
@@ -91,13 +93,11 @@ for (const file of sourcePageFiles) {
     assert.match(source, /onDestroy\s*\(\)\s*\{[^}]*stopHealth\s*\(/, 'home.ux onDestroy 必须清理健康订阅')
     assert.match(source, /由 service\.health 自动读取；比赛模拟器中为官方 Mock/, 'home.ux 必须说明健康数据自动读取与比赛 Mock 来源')
     assert.match(source, /仅展示，不用于热量计算或诊断/, 'home.ux 必须声明健康数据用途边界')
-    assert.match(source, /今日已摄入/, 'home.ux 必须以今日食物摄入为主指标')
-    assert.match(source, /每日饮食参考目标/, 'home.ux 必须解释饮食参考目标')
-    assert.match(source, /食衡三环/, 'home.ux 必须展示三环记录指标')
-    assert.match(source, /mainMealRecordedCount/, 'home.ux 必须展示正餐记录进度')
-    assert.match(source, /foodVarietyCount/, 'home.ux 必须展示食品多样性进度')
-    assert.match(source, /手动补录运动/, 'home.ux 必须明确运动消耗来自手动补录')
-    assert.match(source, /估算净摄入/, 'home.ux 必须把净摄入标为估算')
+    assert.match(source, /今日已记录/, 'home.ux 必须以已记录食物摄入为主指标')
+    assert.match(source, /每日饮食参考线/, 'home.ux 必须解释饮食参考线')
+    assert.match(source, /连续记录 \{\{streakDays\}\} 天/, 'home.ux 必须展示连续记录天数')
+    assert.match(source, /早餐\{\{breakfastState\}\}/, 'home.ux 必须展示三餐记录状态')
+    assert.doesNotMatch(source, /食衡三环|foodVarietyCount|手动补录运动|估算净摄入/, 'home.ux 不得保留已移除指标')
     assert.match(source, /今日小建议/, 'home.ux 必须始终保留本地建议卡')
     assert.match(source, /将发送给端侧 AI/, 'home.ux 必须展示实际发送摘要预览')
     assert.match(source, /取消/, 'home.ux AI 预览必须提供取消入口')
@@ -105,11 +105,6 @@ for (const file of sourcePageFiles) {
     assert.match(source, /onHide\s*\(\)\s*\{[^}]*cancelAiRequest\s*\(/, 'home.ux onHide 必须取消 AI 请求')
     assert.match(source, /onDestroy\s*\(\)\s*\{[^}]*cancelAiRequest\s*\(/, 'home.ux onDestroy 必须取消 AI 请求')
     assert.match(source, /AI 暂不可用，已保留本地建议/, 'home.ux 必须明确展示 AI 回退文案')
-  }
-  if (path.basename(file) === 'exercise.ux') {
-    assert.match(source, /暂不能读取系统步数或运动记录/, 'exercise.ux 必须明确系统运动数据边界')
-    assert.match(source, /运动类型、体重和时长进行 MET 估算/, 'exercise.ux 必须解释 MET 估算来源')
-    assert.match(source, /今日手动补录消耗/, 'exercise.ux 必须明确当日手动补录消耗')
   }
   if (path.basename(file) === 'meal.ux') {
     assert.match(source, /entryMode:'transcript'/, 'meal.ux 必须默认使用一句话记餐模式')
@@ -143,4 +138,4 @@ for (const file of files) {
 }
 
 assert.deepEqual(failures, [], '页面包模块审计失败: ' + failures.join(', '))
-console.log(`页面审计通过：${expectedPageCount} 页及模块打包正常；health 声明、能力探测、前台生命周期及健康/补录来源文案均符合要求。`)
+console.log(`页面审计通过：${expectedPageCount} 页及模块打包正常；health 声明、能力探测、前台生命周期及饮食数据来源文案均符合要求。`)

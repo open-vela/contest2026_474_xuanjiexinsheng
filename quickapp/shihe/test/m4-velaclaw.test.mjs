@@ -10,12 +10,15 @@ function fakeTimers() {
   }
 }
 
-const remaining = buildAiAdviceSummary({ intakeKcal: 1200, exerciseKcal: 180, netKcal: 1020, intakeTargetDeltaKcal: 780, mealCount: 2 })
-assert.match(remaining, /距每日饮食目标 780 kcal/)
-assert.match(buildAiAdviceSummary({ intakeKcal: 2200, exerciseKcal: 100, netKcal: 2100, intakeTargetDeltaKcal: -300, mealCount: 3 }), /食物摄入超过每日饮食目标 300 kcal/)
+const remaining = buildAiAdviceSummary({ intakeKcal: 1200, intakeTargetDeltaKcal: 780, mealCount: 2, streakDays: 4 })
+assert.match(remaining, /距每日饮食参考线 780 kcal/)
+assert.match(remaining, /连续记录 4 天/)
+assert.doesNotMatch(remaining, /运动|净摄入/)
+assert.match(buildAiAdviceSummary({ intakeKcal: 2200, intakeTargetDeltaKcal: -300, mealCount: 3, streakDays: 1 }), /已记录摄入高于每日饮食参考线 300 kcal/)
+assert.match(buildAiAdviceSummary({ intakeKcal: 2000, intakeTargetDeltaKcal: 0, mealCount: 3, streakDays: 1 }), /与每日饮食参考线相同/)
 for (const forbidden of ['心率', '血氧', '压力', '体重', '米饭', '用户', '历史']) assert.equal(remaining.includes(forbidden), false)
-assert.throws(() => buildAiAdviceSummary({ intakeKcal: NaN, exerciseKcal: 0, netKcal: 0, intakeTargetDeltaKcal: 0, mealCount: 0 }), TypeError)
-assert.throws(() => buildAiAdviceSummary({ intakeKcal: 1.2, exerciseKcal: 0, netKcal: 0, intakeTargetDeltaKcal: 0, mealCount: 0 }), TypeError)
+assert.throws(() => buildAiAdviceSummary({ intakeKcal: NaN, intakeTargetDeltaKcal: 0, mealCount: 0, streakDays: 0 }), TypeError)
+assert.throws(() => buildAiAdviceSummary({ intakeKcal: 1.2, intakeTargetDeltaKcal: 0, mealCount: 0, streakDays: 0 }), TypeError)
 assert.equal(AI_ADVICE_TIMEOUT_MS, 10000)
 
 let callback

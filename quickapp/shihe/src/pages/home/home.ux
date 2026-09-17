@@ -1,44 +1,214 @@
-<template><div class="page"><scroll class="content" scroll-y="true">
-<text class="title">食衡 · 今日</text><text class="status" if="{{message}}">{{message}}</text>
-<div class="capsule expanded" if="{{capsuleVisibility === 'expanded'}}"><text class="capsule-title">{{capsuleMealLabel}}时间到了</text><text class="capsule-copy">要记录这一餐吗？</text><div class="capsule-actions"><input class="capsule-button record-button" type="button" value="现在记录" onclick="newMeal"/><input class="capsule-button" type="button" value="稍后提醒" onclick="remindLater"/><input class="capsule-button" type="button" value="本餐跳过" onclick="skipMeal"/></div></div>
-<div class="capsule collapsed" if="{{capsuleVisibility === 'collapsed'}}"><text class="capsule-title" if="{{capsuleStatus === 'completed'}}">{{capsuleMealLabel}}已完成 · {{capsuleKcal}} kcal</text><text class="capsule-title" if="{{capsuleStatus === 'later'}}">{{capsuleMealLabel}} · 已稍后提醒</text><text class="capsule-copy" if="{{capsuleStatus === 'later'}}">15 分钟后，下次打开或回到应用时提醒</text><text class="capsule-title" if="{{capsuleStatus === 'skipped'}}">{{capsuleMealLabel}} · 本餐已跳过</text></div>
-<div class="hero"><text class="eyebrow">今日已摄入</text><div class="intake-row"><text class="intake-value">{{intakeKcal}}</text><text class="intake-unit">kcal</text></div><text class="target-label">每日饮食参考目标 {{dailyTargetKcal}} kcal</text><text class="target-alert" if="{{intakeExceeded}}">已超过参考目标 {{intakeExceededBy}} kcal</text><div class="rings"><div class="ring ring-intake"><text class="ring-value">{{intakeProgress}}%</text><text class="ring-label">饮食</text></div><div class="ring ring-meals"><text class="ring-value">{{mainMealRecordedCount}}/3</text><text class="ring-label">正餐</text></div><div class="ring ring-variety"><text class="ring-value">{{foodVarietyCount}}/12</text><text class="ring-label">种类</text></div></div><text class="ring-note">食衡三环 · 多样性按已记录食品估算</text></div>
-<input class="primary" type="button" value="＋ 记录一餐" onclick="newMeal"/><div class="energy-grid energy-summary"><div class="energy-cell"><text class="energy-value">{{exerciseKcal}}</text><text class="energy-label">手动补录运动</text></div><div class="energy-cell"><text class="energy-value">{{netKcal}}</text><text class="energy-label">估算净摄入</text></div></div><div class="card"><text class="card-title">已保存餐食</text><text class="empty" if="{{!records.length}}">今天还没有餐食记录</text><div class="record" for="(index, record) in records"><div class="record-main"><text class="record-name">{{record.mealLabel}} · {{record.itemLabel}}</text><text class="kcal">{{record.totalKcalSnapshot}} kcal</text></div><div class="actions" if="{{deleteId !== record.id}}"><input class="small" type="button" value="编辑" onclick="editMeal(record)"/><input class="small danger" type="button" value="删除" onclick="askDelete(record)"/></div><div class="confirm-delete" if="{{deleteId === record.id}}"><text class="warn">确定删除？</text><input class="tiny" type="button" value="取消" onclick="cancelDelete"/><input class="tiny danger" type="button" value="确认" onclick="confirmDelete"/></div></div></div>
-<div class="card advice-card"><text class="card-title">今日小建议</text><text class="advice-copy">{{localAdvice}}</text><text class="source-note">本地规则生成 · 仅供生活管理参考</text></div>
-<div class="card ai-card"><text class="card-title">AI 建议</text><input class="ai-entry" if="{{aiStage === 'idle'}}" type="button" value="生成 AI 建议" onclick="previewAiAdvice"/><div class="ai-preview" if="{{aiStage === 'preview'}}"><text class="preview-label">将发送给端侧 AI</text><text class="preview-copy">{{aiPreview}}</text><div class="ai-actions"><input class="small" type="button" value="取消" onclick="cancelAiAdvice"/><input class="small ai-confirm" type="button" value="确认发送" onclick="confirmAiAdvice"/></div></div><text class="ai-status" if="{{aiStage === 'loading'}}">生成中，请稍候…</text><div if="{{aiStage === 'success'}}"><text class="advice-copy">{{aiReply}}</text><text class="source-note">VelaClaw 生成 · 仅供生活管理参考</text></div><div if="{{aiStage === 'failed'}}"><text class="ai-status">{{aiMessage}}</text><input class="ai-entry retry" type="button" value="重新生成" onclick="previewAiAdvice"/></div></div>
-<div class="card health-card"><div class="health-heading"><text class="card-title">系统健康数据</text></div><div class="health-grid"><div class="health-cell"><text class="health-value">{{heartRateText}}</text><text class="health-label">心率 bpm</text></div><div class="health-cell"><text class="health-value green">{{spo2Text}}</text><text class="health-label">血氧 %</text></div><div class="health-cell"><text class="health-value">{{stressText}}</text><text class="health-label">压力值</text></div></div><text class="source-note">由 service.health 自动读取；比赛模拟器中为官方 Mock</text><text class="source-note">仅展示，不用于热量计算或诊断</text></div>
-<text class="disclaimer">食物热量与手动补录运动消耗均为估算，仅供生活管理参考</text><div class="nav-row"><input class="nav-button" type="button" value="手动补录运动" onclick="exercise"/><input class="nav-button" type="button" value="最近 7 天" onclick="history"/></div><input class="secondary" type="button" value="修改首次设置" onclick="settings"/><div class="bottom-space"></div>
-</scroll></div></template>
+<template>
+  <div class="page">
+    <scroll class="content" scroll-y="true">
+      <text class="title">食衡 · 今日</text>
+      <text class="status" if="{{message}}">{{message}}</text>
+
+      <div class="capsule expanded" if="{{capsuleVisibility === 'expanded'}}">
+        <text class="capsule-title">{{capsuleMealLabel}}时间到了</text>
+        <text class="capsule-copy">要记录这一餐吗？</text>
+        <div class="capsule-actions">
+          <input class="capsule-button record-button" type="button" value="现在记录" onclick="newMeal"/>
+          <input class="capsule-button" type="button" value="稍后提醒" onclick="remindLater"/>
+          <input class="capsule-button" type="button" value="本餐跳过" onclick="skipMeal"/>
+        </div>
+      </div>
+      <div class="capsule collapsed" if="{{capsuleVisibility === 'collapsed'}}">
+        <text class="capsule-title" if="{{capsuleStatus === 'completed'}}">{{capsuleMealLabel}}已完成 · {{capsuleKcal}} kcal</text>
+        <text class="capsule-title" if="{{capsuleStatus === 'later'}}">{{capsuleMealLabel}} · 已稍后提醒</text>
+        <text class="capsule-copy" if="{{capsuleStatus === 'later'}}">15 分钟后，下次打开或回到应用时提醒</text>
+        <text class="capsule-title" if="{{capsuleStatus === 'skipped'}}">{{capsuleMealLabel}} · 本餐已跳过</text>
+      </div>
+
+      <div class="hero">
+        <text class="eyebrow">今日已记录</text>
+        <div class="intake-row"><text class="intake-value">{{intakeKcal}}</text><text class="intake-unit">kcal</text></div>
+        <text class="target-label">每日饮食参考线 {{dailyTargetKcal}} kcal</text>
+        <text class="progress-copy">按已记录餐食计算 · {{intakeProgress}}%</text>
+        <div class="progress-track"><div class="progress-fill" style="width: {{progressWidth}};"></div></div>
+        <text class="target-alert" if="{{intakeExceeded}}">高于参考线 {{intakeExceededBy}} kcal</text>
+        <div class="recording-summary">
+          <text class="streak">连续记录 {{streakDays}} 天</text>
+          <text class="today-pending" if="{{!hasTodayMeal}}">今天尚未记录</text>
+        </div>
+        <text class="meal-states">早餐{{breakfastState}} · 午餐{{lunchState}} · 晚餐{{dinnerState}}</text>
+      </div>
+
+      <input class="primary" type="button" value="＋ 记录一餐" onclick="newMeal"/>
+
+      <div class="card">
+        <text class="card-title">已保存餐食</text>
+        <text class="empty" if="{{!records.length}}">今天还没有餐食记录</text>
+        <div class="record" for="(index, record) in records">
+          <div class="record-main"><text class="record-name">{{record.mealLabel}} · {{record.itemLabel}}</text><text class="kcal">{{record.totalKcalSnapshot}} kcal</text></div>
+          <div class="actions" if="{{deleteId !== record.id}}"><input class="small" type="button" value="编辑" onclick="editMeal(record)"/><input class="small danger" type="button" value="删除" onclick="askDelete(record)"/></div>
+          <div class="confirm-delete" if="{{deleteId === record.id}}"><text class="warn">确定删除？</text><input class="tiny" type="button" value="取消" onclick="cancelDelete"/><input class="tiny danger" type="button" value="确认" onclick="confirmDelete"/></div>
+        </div>
+      </div>
+
+      <div class="card health-card">
+        <text class="card-title">系统健康数据</text>
+        <div class="health-grid">
+          <div class="health-cell"><text class="health-value">{{heartRateText}}</text><text class="health-label">心率 bpm</text></div>
+          <div class="health-cell"><text class="health-value green">{{spo2Text}}</text><text class="health-label">血氧 %</text></div>
+          <div class="health-cell"><text class="health-value">{{stressText}}</text><text class="health-label">压力值</text></div>
+        </div>
+        <text class="source-note">由 service.health 自动读取；比赛模拟器中为官方 Mock</text>
+        <text class="source-note">仅展示，不用于热量计算或诊断</text>
+      </div>
+
+      <div class="card advice-card"><text class="card-title">今日小建议</text><text class="advice-copy">{{localAdvice}}</text><text class="source-note">本地规则生成 · 仅供生活管理参考</text></div>
+      <div class="card ai-card">
+        <text class="card-title">AI 建议</text>
+        <input class="ai-entry" if="{{aiStage === 'idle'}}" type="button" value="生成 AI 建议" onclick="previewAiAdvice"/>
+        <div class="ai-preview" if="{{aiStage === 'preview'}}"><text class="preview-label">将发送给端侧 AI</text><text class="preview-copy">{{aiPreview}}</text><div class="ai-actions"><input class="small" type="button" value="取消" onclick="cancelAiAdvice"/><input class="small ai-confirm" type="button" value="确认发送" onclick="confirmAiAdvice"/></div></div>
+        <text class="ai-status" if="{{aiStage === 'loading'}}">生成中，请稍候…</text>
+        <div if="{{aiStage === 'success'}}"><text class="advice-copy">{{aiReply}}</text><text class="source-note">VelaClaw 生成 · 仅供生活管理参考</text></div>
+        <div if="{{aiStage === 'failed'}}"><text class="ai-status">{{aiMessage}}</text><input class="ai-entry retry" type="button" value="重新生成" onclick="previewAiAdvice"/></div>
+      </div>
+
+      <text class="disclaimer">食物热量按已记录内容估算，仅供生活管理参考</text>
+      <input class="secondary history-button" type="button" value="最近 7 天饮食记录" onclick="history"/>
+      <input class="secondary" type="button" value="修改首次设置" onclick="settings"/>
+      <div class="bottom-space"></div>
+    </scroll>
+  </div>
+</template>
+
 <script>
 import router from '@system.router'
 import { FOODS, calculateFoodKcal } from '../../data/foods'
 import { validateState } from '../../common/state'
 import { loadState, saveState } from '../../common/state-store'
 import { localDateOf, todaySummary, deleteMeal, draftFromRecord, syncMealPromptState, serializeMealDraft, mealCapsuleView, setActiveMealLater, skipActiveMeal } from '../../common/meal-domain'
-import { dailyEnergySummary, retainRecentLocalDays } from '../../common/energy-domain'
+import { dailyDietSummary, recordingStreak, retainRecentLocalDays } from '../../common/energy-domain'
 import { deterministicLocalAdvice, healthStateText } from '../../common/health-advice'
 import { buildAiAdviceSummary } from '../../common/ai-advice'
 import { subscribeAllHealth, unsubscribeAllHealth } from '../../services/health-service'
 import { askVelaclaw } from '../../services/velaclaw-service'
+
 const validateStoredState = state => validateState(state, FOODS)
 const LABELS = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐', snack: '加餐' }
-export default { data: { state:null,profile:null,records:[],intakeKcal:0,exerciseKcal:0,netKcal:0,dailyTargetKcal:0,intakeTargetDeltaKcal:0,intakeProgress:0,mainMealRecordedCount:0,foodVarietyCount:0,intakeExceeded:false,intakeExceededBy:0,capsuleVisibility:'hidden',capsuleStatus:'',capsuleMealLabel:'',capsuleKcal:0,deleteId:'',message:'',heartRateText:'读取中',spo2Text:'读取中',stressText:'读取中',stressValue:null,localAdvice:'今天还没有记录餐食，记下第一餐后建议会随记录更新。',healthActive:false,healthSession:0,aiStage:'idle',aiPreview:'',aiReply:'',aiMessage:'',aiCancel:null,aiSession:0 },
-onShow(){this.refreshToday();this.startHealth()}, onHide(){this.stopHealth();this.cancelAiRequest()}, onDestroy(){this.stopHealth();this.cancelAiRequest()},
-startHealth(){this.stopHealth();this.healthActive=true;const session=++this.healthSession;this.heartRateText='读取中';this.spo2Text='读取中';this.stressText='读取中';this.stressValue=null;this.recomputeAdvice();let capability=true;if(typeof this.$canIUse==='function'){try{capability=this.$canIUse('@service.health')}catch(error){capability=true}}if(capability===false){this.applyHealthState('heartRate',{status:'unsupported',reason:'capability-check'});this.applyHealthState('spo2',{status:'unsupported',reason:'capability-check'});this.applyHealthState('stress',{status:'unsupported',reason:'capability-check'});return}subscribeAllHealth((kind,sample)=>{if(!this.healthActive||session!==this.healthSession)return;this.applyHealthSample(kind,sample)},(kind,state)=>{if(!this.healthActive||session!==this.healthSession)return;this.applyHealthState(kind,state)})},
-stopHealth(){this.healthActive=false;this.healthSession+=1;unsubscribeAllHealth()},
-applyHealthSample(kind,sample){if(kind==='heartRate')this.heartRateText=String(sample.value);else if(kind==='spo2')this.spo2Text=String(sample.value);else if(kind==='stress'){this.stressText=String(sample.value);this.stressValue=sample.value;this.recomputeAdvice()}},
-applyHealthState(kind,state){const message=healthStateText(state);if(kind==='heartRate')this.heartRateText=message;else if(kind==='spo2')this.spo2Text=message;else if(kind==='stress'){this.stressText=message;this.stressValue=null;this.recomputeAdvice()}},
-refreshToday(){const now=Date.now();loadState(validateStoredState,result=>{if(result.status!=='ok'||!result.state.profile){this.clearPage();this.message=result.status==='corrupt'?'本地数据损坏，未作覆盖':'无法读取本机记录';return}const original=result.state;const maintenance=retainRecentLocalDays(original,now);if(!maintenance.changed){this.renderState(original,now,'');return}saveState(validateStoredState,maintenance.state,saved=>{if(saved.status==='ok')this.renderState(maintenance.state,now,'');else this.renderState(original,now,'记录维护保存失败，已显示原有数据')})})},
-  clearPage(){this.clearAiState();this.state=null;this.profile=null;this.records=[];this.intakeKcal=0;this.exerciseKcal=0;this.netKcal=0;this.dailyTargetKcal=0;this.intakeTargetDeltaKcal=0;this.intakeProgress=0;this.mainMealRecordedCount=0;this.foodVarietyCount=0;this.intakeExceeded=false;this.intakeExceededBy=0;this.capsuleVisibility='hidden';this.capsuleStatus='';this.capsuleMealLabel='';this.capsuleKcal=0;this.deleteId='';this.recomputeAdvice()},
-  renderState(state,now,message){this.clearAiState();this.state=state;this.profile=state.profile;const date=localDateOf(now);const summary=todaySummary(state.meals,date);const energy=dailyEnergySummary(state.meals,state.exercises,date,state.profile.dailyTargetKcal);this.intakeKcal=energy.intakeKcal;this.exerciseKcal=energy.exerciseKcal;this.netKcal=energy.netKcal;this.dailyTargetKcal=state.profile.dailyTargetKcal;this.intakeTargetDeltaKcal=energy.intakeTargetDeltaKcal;this.intakeExceeded=energy.intakeTargetDeltaKcal<0;this.intakeExceededBy=this.intakeExceeded?Math.abs(energy.intakeTargetDeltaKcal):0;this.intakeProgress=energy.intakeProgressPercent;this.mainMealRecordedCount=energy.mainMealRecordedCount;this.foodVarietyCount=energy.foodVarietyCount;this.records=summary.records.map(record=>Object.assign({},record,{mealLabel:LABELS[record.mealType],itemLabel:record.items.map(item=>item.nameSnapshot).join('、')}));const capsule=mealCapsuleView(state.profile,state.meals,state.mealPromptState,now);this.capsuleVisibility=capsule.visibility;this.capsuleStatus=capsule.status||'';this.capsuleMealLabel=capsule.mealType?LABELS[capsule.mealType]:'';this.capsuleKcal=capsule.kcal||0;this.message=message;this.recomputeAdvice()},
-recomputeAdvice(){this.localAdvice=deterministicLocalAdvice({stress:this.stressValue,intakeTargetDeltaKcal:this.intakeTargetDeltaKcal,meals:this.records,foods:FOODS})},
-cancelAiRequest(){this.aiSession+=1;if(typeof this.aiCancel==='function')this.aiCancel();this.aiCancel=null}, clearAiState(){this.cancelAiRequest();this.aiStage='idle';this.aiPreview='';this.aiReply='';this.aiMessage=''},
-previewAiAdvice(){this.cancelAiRequest();try{this.aiPreview=buildAiAdviceSummary({intakeKcal:this.intakeKcal,exerciseKcal:this.exerciseKcal,netKcal:this.netKcal,intakeTargetDeltaKcal:this.intakeTargetDeltaKcal,mealCount:this.records.length});this.aiReply='';this.aiMessage='';this.aiStage='preview'}catch(error){this.aiStage='failed';this.aiMessage='AI 暂不可用，已保留本地建议'}}, cancelAiAdvice(){this.clearAiState()}, confirmAiAdvice(){if(this.aiStage!=='preview'||!this.aiPreview)return;this.cancelAiRequest();const session=this.aiSession;this.aiStage='loading';this.aiReply='';this.aiMessage='';this.aiCancel=askVelaclaw(this.aiPreview,result=>{if(session!==this.aiSession)return;this.aiCancel=null;if(result.status==='success'){this.aiReply=result.reply;this.aiStage='success'}else{this.aiMessage='AI 暂不可用，已保留本地建议';this.aiStage='failed'}})},
-newMeal(){router.push({uri:'/pages/meal'})}, editMeal(record){const draftJson=serializeMealDraft(draftFromRecord(FOODS,calculateFoodKcal,record));router.push({uri:'/pages/confirm',params:{draftJson}})}, askDelete(record){this.deleteId=record.id}, cancelDelete(){this.deleteId=''}, confirmDelete(){if(!this.state||!this.deleteId)return;const now=Date.now();const meals=deleteMeal(this.state.meals,this.deleteId);const state=Object.assign({},this.state,{meals,lastMaintenanceAt:now,mealPromptState:syncMealPromptState(this.state.mealPromptState,meals,localDateOf(now))});saveState(validateStoredState,state,result=>{if(result.status==='ok'){this.deleteId='';this.renderState(state,now,'')}else this.message='删除保存失败，请重试'})},
-remindLater(){this.updatePrompt(setActiveMealLater)}, skipMeal(){this.updatePrompt(skipActiveMeal)}, updatePrompt(action){if(!this.state||!this.profile)return;const now=Date.now();const update=action(this.profile,this.state.meals,this.state.mealPromptState,now);if(!update.changed){this.message='当前无法更新餐时提示';return}const state=Object.assign({},this.state,{mealPromptState:update.promptState,lastMaintenanceAt:now});saveState(validateStoredState,state,result=>{if(result.status==='ok')this.renderState(state,now,'');else this.message='餐时提示保存失败，请重试'})}, exercise(){router.push({uri:'/pages/exercise'})}, history(){router.push({uri:'/pages/history'})}, settings(){router.replace({uri:'/pages/onboarding'})} }
+
+export default {
+  data: {
+    state: null, profile: null, records: [], intakeKcal: 0, dailyTargetKcal: 0,
+    intakeTargetDeltaKcal: 0, intakeProgress: 0, progressWidth: '0%',
+    intakeExceeded: false, intakeExceededBy: 0, streakDays: 0, hasTodayMeal: false,
+    breakfastState: '待记录', lunchState: '待记录', dinnerState: '待记录',
+    capsuleVisibility: 'hidden', capsuleStatus: '', capsuleMealLabel: '', capsuleKcal: 0,
+    deleteId: '', message: '', heartRateText: '读取中', spo2Text: '读取中', stressText: '读取中', stressValue: null,
+    localAdvice: '今天还没有记录餐食，记下第一餐后建议会随记录更新。', healthActive: false, healthSession: 0,
+    aiStage: 'idle', aiPreview: '', aiReply: '', aiMessage: '', aiCancel: null, aiSession: 0
+  },
+  onShow() { this.refreshToday(); this.startHealth() },
+  onHide() { this.stopHealth(); this.cancelAiRequest() },
+  onDestroy() { this.stopHealth(); this.cancelAiRequest() },
+  startHealth() {
+    this.stopHealth(); this.healthActive = true
+    const session = ++this.healthSession
+    this.heartRateText = '读取中'; this.spo2Text = '读取中'; this.stressText = '读取中'; this.stressValue = null; this.recomputeAdvice()
+    let capability = true
+    if (typeof this.$canIUse === 'function') { try { capability = this.$canIUse('@service.health') } catch (error) { capability = true } }
+    if (capability === false) {
+      this.applyHealthState('heartRate', { status: 'unsupported', reason: 'capability-check' })
+      this.applyHealthState('spo2', { status: 'unsupported', reason: 'capability-check' })
+      this.applyHealthState('stress', { status: 'unsupported', reason: 'capability-check' })
+      return
+    }
+    subscribeAllHealth((kind, sample) => { if (this.healthActive && session === this.healthSession) this.applyHealthSample(kind, sample) }, (kind, state) => { if (this.healthActive && session === this.healthSession) this.applyHealthState(kind, state) })
+  },
+  stopHealth() { this.healthActive = false; this.healthSession += 1; unsubscribeAllHealth() },
+  applyHealthSample(kind, sample) {
+    if (kind === 'heartRate') this.heartRateText = String(sample.value)
+    else if (kind === 'spo2') this.spo2Text = String(sample.value)
+    else if (kind === 'stress') { this.stressText = String(sample.value); this.stressValue = sample.value; this.recomputeAdvice() }
+  },
+  applyHealthState(kind, state) {
+    const message = healthStateText(state)
+    if (kind === 'heartRate') this.heartRateText = message
+    else if (kind === 'spo2') this.spo2Text = message
+    else if (kind === 'stress') { this.stressText = message; this.stressValue = null; this.recomputeAdvice() }
+  },
+  refreshToday() {
+    const now = Date.now()
+    loadState(validateStoredState, result => {
+      if (result.status !== 'ok' || !result.state.profile) { this.clearPage(); this.message = result.status === 'corrupt' ? '本地数据损坏，未作覆盖' : '无法读取本机记录'; return }
+      const original = result.state
+      const maintenance = retainRecentLocalDays(original, now)
+      if (!maintenance.changed) { this.renderState(original, now, ''); return }
+      saveState(validateStoredState, maintenance.state, saved => {
+        if (saved.status === 'ok') this.renderState(maintenance.state, now, '')
+        else this.renderState(original, now, '记录维护保存失败，已显示原有数据')
+      })
+    })
+  },
+  clearPage() {
+    this.clearAiState(); this.state = null; this.profile = null; this.records = []; this.intakeKcal = 0; this.dailyTargetKcal = 0
+    this.intakeTargetDeltaKcal = 0; this.intakeProgress = 0; this.progressWidth = '0%'; this.intakeExceeded = false; this.intakeExceededBy = 0
+    this.streakDays = 0; this.hasTodayMeal = false; this.breakfastState = '待记录'; this.lunchState = '待记录'; this.dinnerState = '待记录'
+    this.capsuleVisibility = 'hidden'; this.capsuleStatus = ''; this.capsuleMealLabel = ''; this.capsuleKcal = 0; this.deleteId = ''; this.recomputeAdvice()
+  },
+  renderState(state, now, message) {
+    this.clearAiState(); this.state = state; this.profile = state.profile
+    const date = localDateOf(now)
+    const summary = todaySummary(state.meals, date)
+    const diet = dailyDietSummary(state.meals, date, state.profile.dailyTargetKcal)
+    this.intakeKcal = diet.intakeKcal; this.dailyTargetKcal = state.profile.dailyTargetKcal; this.intakeTargetDeltaKcal = diet.intakeTargetDeltaKcal
+    this.intakeExceeded = diet.intakeTargetDeltaKcal < 0; this.intakeExceededBy = this.intakeExceeded ? Math.abs(diet.intakeTargetDeltaKcal) : 0
+    this.intakeProgress = diet.intakeProgressPercent; this.progressWidth = diet.intakeProgressCappedPercent + '%'
+    this.streakDays = recordingStreak(state.meals, date); this.hasTodayMeal = diet.mealCount > 0
+    this.breakfastState = diet.mainMealStatus.breakfast ? '已记' : '待记录'; this.lunchState = diet.mainMealStatus.lunch ? '已记' : '待记录'; this.dinnerState = diet.mainMealStatus.dinner ? '已记' : '待记录'
+    this.records = summary.records.map(record => Object.assign({}, record, { mealLabel: LABELS[record.mealType], itemLabel: record.items.map(item => item.nameSnapshot).join('、') }))
+    const capsule = mealCapsuleView(state.profile, state.meals, state.mealPromptState, now)
+    this.capsuleVisibility = capsule.visibility; this.capsuleStatus = capsule.status || ''; this.capsuleMealLabel = capsule.mealType ? LABELS[capsule.mealType] : ''; this.capsuleKcal = capsule.kcal || 0
+    this.message = message; this.recomputeAdvice()
+  },
+  recomputeAdvice() { this.localAdvice = deterministicLocalAdvice({ stress: this.stressValue, intakeTargetDeltaKcal: this.intakeTargetDeltaKcal, meals: this.records, foods: FOODS }) },
+  cancelAiRequest() { this.aiSession += 1; if (typeof this.aiCancel === 'function') this.aiCancel(); this.aiCancel = null },
+  clearAiState() { this.cancelAiRequest(); this.aiStage = 'idle'; this.aiPreview = ''; this.aiReply = ''; this.aiMessage = '' },
+  previewAiAdvice() {
+    this.cancelAiRequest()
+    try {
+      this.aiPreview = buildAiAdviceSummary({ intakeKcal: this.intakeKcal, intakeTargetDeltaKcal: this.intakeTargetDeltaKcal, mealCount: this.records.length, streakDays: this.streakDays })
+      this.aiReply = ''; this.aiMessage = ''; this.aiStage = 'preview'
+    } catch (error) { this.aiStage = 'failed'; this.aiMessage = 'AI 暂不可用，已保留本地建议' }
+  },
+  cancelAiAdvice() { this.clearAiState() },
+  confirmAiAdvice() {
+    if (this.aiStage !== 'preview' || !this.aiPreview) return
+    this.cancelAiRequest(); const session = this.aiSession; this.aiStage = 'loading'; this.aiReply = ''; this.aiMessage = ''
+    this.aiCancel = askVelaclaw(this.aiPreview, result => {
+      if (session !== this.aiSession) return
+      this.aiCancel = null
+      if (result.status === 'success') { this.aiReply = result.reply; this.aiStage = 'success' }
+      else { this.aiMessage = 'AI 暂不可用，已保留本地建议'; this.aiStage = 'failed' }
+    })
+  },
+  newMeal() { router.push({ uri: '/pages/meal' }) },
+  editMeal(record) { const draftJson = serializeMealDraft(draftFromRecord(FOODS, calculateFoodKcal, record)); router.push({ uri: '/pages/confirm', params: { draftJson } }) },
+  askDelete(record) { this.deleteId = record.id },
+  cancelDelete() { this.deleteId = '' },
+  confirmDelete() {
+    if (!this.state || !this.deleteId) return
+    const now = Date.now(); const meals = deleteMeal(this.state.meals, this.deleteId)
+    const state = Object.assign({}, this.state, { meals, lastMaintenanceAt: now, mealPromptState: syncMealPromptState(this.state.mealPromptState, meals, localDateOf(now)) })
+    saveState(validateStoredState, state, result => { if (result.status === 'ok') { this.deleteId = ''; this.renderState(state, now, '') } else this.message = '删除保存失败，请重试' })
+  },
+  remindLater() { this.updatePrompt(setActiveMealLater) },
+  skipMeal() { this.updatePrompt(skipActiveMeal) },
+  updatePrompt(action) {
+    if (!this.state || !this.profile) return
+    const now = Date.now(); const update = action(this.profile, this.state.meals, this.state.mealPromptState, now)
+    if (!update.changed) { this.message = '当前无法更新餐时提示'; return }
+    const state = Object.assign({}, this.state, { mealPromptState: update.promptState, lastMaintenanceAt: now })
+    saveState(validateStoredState, state, result => { if (result.status === 'ok') this.renderState(state, now, ''); else this.message = '餐时提示保存失败，请重试' })
+  },
+  history() { router.push({ uri: '/pages/history' }) },
+  settings() { router.replace({ uri: '/pages/onboarding' }) }
+}
 </script>
+
 <style>
-.page{width:100%;height:100%;background-color:#090a09;flex-direction:column}.content{width:100%;height:100%;flex-direction:column;padding:28px 26px 24px}.title{color:#f4f1e8;font-size:31px;font-weight:bold;text-align:center;margin-bottom:14px}.status,.warn{color:#c7a382;font-size:17px;text-align:center;margin-bottom:8px}.capsule,.hero,.card{width:100%;flex-direction:column;background-color:#1c1d1c;border-radius:24px;padding:18px;margin-bottom:14px}.expanded{background-color:#24211e}.collapsed{padding:15px 18px}.capsule-title{color:#f4f1e8;font-size:20px;font-weight:bold}.capsule-copy{color:#949590;font-size:16px;margin-top:4px}.capsule-actions{width:100%;justify-content:space-between;margin-top:14px}.capsule-button{width:31%;height:46px;border-radius:23px;background-color:#2a2b2a;color:#d5d2ca;font-size:15px}.record-button{background-color:#f28a32;color:#17120e}.hero{align-items:center;padding:20px 18px 18px}.eyebrow{color:#b5b4ae;font-size:17px;margin-bottom:0}.intake-row{width:100%;justify-content:center;align-items:flex-end}.intake-value{color:#f4f1e8;font-size:64px;font-weight:bold}.intake-unit{color:#b5b4ae;font-size:18px;margin:0 0 10px 7px}.target-label{color:#b5b4ae;font-size:16px;margin-top:-4px}.target-alert{color:#f28a32;font-size:15px;margin-top:5px}.rings{width:100%;justify-content:space-between;margin-top:16px}.ring{width:92px;height:92px;border-radius:46px;border-width:5px;background-color:#151615;flex-direction:column;align-items:center;justify-content:center}.ring-intake{border-color:#e98637}.ring-meals{border-color:#68bd82}.ring-variety{border-color:#7896b3}.ring-value{color:#f4f1e8;font-size:21px;font-weight:bold;text-align:center}.ring-label{color:#92938e;font-size:13px;text-align:center;margin-top:1px}.ring-note{color:#777873;font-size:13px;text-align:center;margin-top:8px}.energy-grid{width:100%;justify-content:space-between;border-top-width:1px;border-color:#343534;margin-top:14px;padding-top:12px}.energy-cell{width:49%;flex-direction:column;align-items:center;padding:2px}.energy-value{color:#ddd9d0;font-size:24px;font-weight:bold}.energy-label{color:#858681;font-size:14px;text-align:center;margin-top:2px}.green{color:#72c98b}.orange{color:#f28a32}.primary,.secondary{width:100%;height:58px;border-radius:29px;background-color:#f28a32;color:#17120e;font-size:21px;font-weight:bold;margin-bottom:14px}.secondary{height:48px;background-color:#222322;color:#b8b7b1;font-size:17px;font-weight:normal}.nav-row{width:100%;justify-content:space-between;margin-bottom:12px}.nav-button{width:48%;height:48px;border-radius:24px;background-color:#222322;color:#d5d2ca;font-size:16px}.card-title{color:#f4f1e8;font-size:20px;font-weight:bold;margin-bottom:9px}.empty,.disclaimer{color:#858681;font-size:16px;text-align:center}.record{width:100%;flex-direction:column;border-top-width:1px;border-color:#343534;padding:12px 0}.record-main{width:100%;justify-content:space-between}.record-name{color:#e5e1d8;font-size:17px;width:68%}.kcal{color:#b8b7b1;font-size:17px}.actions,.confirm-delete{width:100%;justify-content:flex-end;align-items:center;margin-top:8px}.small,.tiny{width:88px;height:44px;border-radius:22px;background-color:#2a2b2a;color:#d5d2ca;font-size:17px;margin-left:8px}.tiny{width:70px}.danger{background-color:#322826;color:#d9aaa2}.advice-copy{color:#d5d2ca;font-size:17px;line-height:25px}.source-note{color:#777873;font-size:14px;margin-top:8px}.ai-entry{width:100%;height:46px;border-radius:23px;background-color:#2a2b2a;color:#d5d2ca;font-size:17px}.ai-preview{width:100%;flex-direction:column}.preview-label{color:#aaa8a1;font-size:15px;margin-bottom:7px}.preview-copy,.ai-status{color:#c7c4bc;font-size:16px;line-height:23px}.ai-actions{width:100%;justify-content:flex-end;margin-top:12px}.ai-confirm{width:112px;background-color:#f28a32;color:#17120e}.retry{margin-top:12px}.health-heading{width:100%;justify-content:space-between;align-items:center}.health-grid{width:100%;justify-content:space-between}.health-cell{width:32%;flex-direction:column;align-items:center}.health-value{color:#d5d2ca;font-size:20px;font-weight:bold;text-align:center}.health-label{color:#858681;font-size:14px;text-align:center;margin-top:4px}.disclaimer{margin:3px 0 13px;line-height:23px}.bottom-space{height:34px}
-.record-button{background-color:#35322f;color:#f4f1e8}.orange{color:#f4f1e8}.ai-confirm{background-color:#35322f;color:#f4f1e8}
-.content{padding:20px 26px 24px}.title{font-size:30px;margin-bottom:10px}.capsule,.hero,.card{margin-bottom:12px}.hero{padding:13px 16px 12px}.eyebrow{font-size:16px}.intake-value{font-size:52px}.intake-unit{font-size:17px;margin:0 0 8px 6px}.target-label{font-size:15px;margin-top:-3px}.target-alert{font-size:14px;margin-top:3px}.rings{margin-top:10px}.ring{width:74px;height:74px;border-radius:37px;border-width:4px}.ring-value{font-size:18px}.ring-label{font-size:12px;margin-top:0}.ring-note{font-size:12px;margin-top:4px}.energy-grid{margin-top:8px;padding-top:7px}.energy-summary{background-color:#1c1d1c;border-radius:20px;border-top-width:0;margin-top:0;margin-bottom:12px;padding:10px 16px}.energy-cell{padding:0}.energy-value{font-size:20px}.energy-label{font-size:12px;margin-top:0}.primary{height:56px;border-radius:28px;margin-bottom:12px}
+.page{width:100%;height:100%;background-color:#090a09;flex-direction:column}.content{width:100%;height:100%;flex-direction:column;padding:20px 26px 24px}.title{color:#f4f1e8;font-size:30px;font-weight:bold;text-align:center;margin-bottom:10px}.status,.warn{color:#c7a382;font-size:17px;text-align:center;margin-bottom:8px}.capsule,.hero,.card{width:100%;flex-direction:column;background-color:#1c1d1c;border-radius:24px;padding:18px;margin-bottom:12px}.expanded{background-color:#24211e}.collapsed{padding:15px 18px}.capsule-title{color:#f4f1e8;font-size:20px;font-weight:bold}.capsule-copy{color:#949590;font-size:16px;margin-top:4px}.capsule-actions{width:100%;justify-content:space-between;margin-top:14px}.capsule-button{width:31%;height:46px;border-radius:23px;background-color:#2a2b2a;color:#d5d2ca;font-size:15px}.record-button{background-color:#35322f;color:#f4f1e8}.hero{align-items:center;padding:16px 18px}.eyebrow{color:#b5b4ae;font-size:17px}.intake-row{width:100%;justify-content:center;align-items:flex-end}.intake-value{color:#f4f1e8;font-size:56px;font-weight:bold}.intake-unit{color:#b5b4ae;font-size:18px;margin:0 0 9px 7px}.target-label{color:#b5b4ae;font-size:16px;margin-top:-3px}.progress-copy{color:#858681;font-size:14px;margin-top:5px}.progress-track{width:100%;height:8px;border-radius:4px;background-color:#30312f;margin-top:12px}.progress-fill{height:8px;border-radius:4px;background-color:#f28a32}.target-alert{color:#f28a32;font-size:15px;margin-top:8px}.recording-summary{width:100%;justify-content:center;align-items:center;margin-top:13px}.streak{color:#d5d2ca;font-size:17px;font-weight:bold}.today-pending{color:#949590;font-size:15px;margin-left:10px}.meal-states{color:#9c9d97;font-size:15px;text-align:center;margin-top:8px}.green{color:#72c98b}.primary,.secondary{width:100%;height:56px;border-radius:28px;background-color:#f28a32;color:#17120e;font-size:21px;font-weight:bold;margin-bottom:12px}.secondary{height:48px;background-color:#222322;color:#b8b7b1;font-size:17px;font-weight:normal}.history-button{color:#e5e1d8}.card-title{color:#f4f1e8;font-size:20px;font-weight:bold;margin-bottom:9px}.empty,.disclaimer{color:#858681;font-size:16px;text-align:center}.record{width:100%;flex-direction:column;border-top-width:1px;border-color:#343534;padding:12px 0}.record-main{width:100%;justify-content:space-between}.record-name{color:#e5e1d8;font-size:17px;width:68%}.kcal{color:#b8b7b1;font-size:17px}.actions,.confirm-delete{width:100%;justify-content:flex-end;align-items:center;margin-top:8px}.small,.tiny{width:88px;height:44px;border-radius:22px;background-color:#2a2b2a;color:#d5d2ca;font-size:17px;margin-left:8px}.tiny{width:70px}.danger{background-color:#322826;color:#d9aaa2}.advice-copy{color:#d5d2ca;font-size:17px;line-height:25px}.source-note{color:#777873;font-size:14px;margin-top:8px}.ai-entry{width:100%;height:46px;border-radius:23px;background-color:#2a2b2a;color:#d5d2ca;font-size:17px}.ai-preview{width:100%;flex-direction:column}.preview-label{color:#aaa8a1;font-size:15px;margin-bottom:7px}.preview-copy,.ai-status{color:#c7c4bc;font-size:16px;line-height:23px}.ai-actions{width:100%;justify-content:flex-end;margin-top:12px}.ai-confirm{width:112px;background-color:#35322f;color:#f4f1e8}.retry{margin-top:12px}.health-grid{width:100%;justify-content:space-between}.health-cell{width:32%;flex-direction:column;align-items:center}.health-value{color:#d5d2ca;font-size:20px;font-weight:bold;text-align:center}.health-label{color:#858681;font-size:14px;text-align:center;margin-top:4px}.disclaimer{margin:3px 0 13px;line-height:23px}.bottom-space{height:34px}
 </style>

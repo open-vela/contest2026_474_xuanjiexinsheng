@@ -13,12 +13,13 @@ function requireFiniteInteger(value, name, minimum) {
 export function buildAiAdviceSummary(input) {
   if (!input || typeof input !== 'object') throw new TypeError('当天汇总不能为空')
   const intakeKcal = requireFiniteInteger(input.intakeKcal, '摄入 kcal', 0)
-  const exerciseKcal = requireFiniteInteger(input.exerciseKcal, '运动消耗 kcal', 0)
-  const netKcal = requireFiniteInteger(input.netKcal, '净摄入 kcal', -Number.MAX_SAFE_INTEGER)
-  const intakeTargetDeltaKcal = requireFiniteInteger(input.intakeTargetDeltaKcal, '饮食目标差值 kcal', -Number.MAX_SAFE_INTEGER)
+  const intakeTargetDeltaKcal = requireFiniteInteger(input.intakeTargetDeltaKcal, '饮食参考线差值 kcal', -Number.MAX_SAFE_INTEGER)
   const mealCount = requireFiniteInteger(input.mealCount, '已记录餐次数', 0)
-  const targetText = intakeTargetDeltaKcal < 0 ? '食物摄入超过每日饮食目标 ' + Math.abs(intakeTargetDeltaKcal) : '距每日饮食目标 ' + intakeTargetDeltaKcal
-  return '今日脱敏汇总：食物摄入 ' + intakeKcal + ' kcal；手动补录运动消耗 ' + exerciseKcal + ' kcal；估算净摄入 ' + netKcal + ' kcal；' + targetText + ' kcal；已记录餐次数 ' + mealCount + '。请给一句简短温和的生活管理建议，不作诊断。'
+  const streakDays = requireFiniteInteger(input.streakDays, '连续记录天数', 0)
+  let targetText = '与每日饮食参考线相同'
+  if (intakeTargetDeltaKcal < 0) targetText = '已记录摄入高于每日饮食参考线 ' + Math.abs(intakeTargetDeltaKcal) + ' kcal'
+  else if (intakeTargetDeltaKcal > 0) targetText = '距每日饮食参考线 ' + intakeTargetDeltaKcal + ' kcal'
+  return '今日脱敏汇总：已记录食物摄入 ' + intakeKcal + ' kcal；' + targetText + '；已记录餐次数 ' + mealCount + '；连续记录 ' + streakDays + ' 天。请给一句简短温和的生活管理建议，不作诊断。'
 }
 
 export function normalizeAiReply(reply) {

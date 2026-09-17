@@ -15,6 +15,13 @@ export function isLowDailyTarget(value) {
   return finiteNumber(Number(value)) && Number(value) < LOW_TARGET_WARNING_KCAL
 }
 
+export function dailyTargetReferenceText(value) {
+  const target = editableDailyTarget(value)
+  if (target === DEFAULT_DAILY_TARGET_KCAL) return '与 2000 kcal 标签参考值相同'
+  if (target < DEFAULT_DAILY_TARGET_KCAL) return '比 2000 kcal 标签参考值低 ' + (DEFAULT_DAILY_TARGET_KCAL - target) + ' kcal'
+  return '比 2000 kcal 标签参考值高 ' + (target - DEFAULT_DAILY_TARGET_KCAL) + ' kcal'
+}
+
 export function defaultMealWindows() {
   return {
     breakfast: { start: '07:00', end: '09:30' },
@@ -101,15 +108,15 @@ function validExercise(record) {
 
 export function normalizeProfile(profile) {
   if (!profile || profile.schemaVersion !== STATE_SCHEMA_VERSION) return null
-  if (!finiteNumber(profile.weightKg) || profile.weightKg < 25 || profile.weightKg > 250) return null
+  const hasWeight = Object.prototype.hasOwnProperty.call(profile, 'weightKg')
+  if (hasWeight && (!finiteNumber(profile.weightKg) || profile.weightKg < 25 || profile.weightKg > 250)) return null
   if (!Number.isInteger(profile.dailyTargetKcal) || profile.dailyTargetKcal < 800 || profile.dailyTargetKcal > 5000) return null
   const windows = profile.mealWindows
   if (!windows || !validWindow(windows.breakfast) || !validWindow(windows.lunch) || !validWindow(windows.dinner)) return null
   if (!finiteNumber(profile.disclaimerAcceptedAt) || profile.disclaimerAcceptedAt <= 0) return null
   if (!finiteNumber(profile.updatedAt) || profile.updatedAt <= 0) return null
-  return {
+  const normalized = {
     schemaVersion: STATE_SCHEMA_VERSION,
-    weightKg: Math.round(profile.weightKg * 10) / 10,
     dailyTargetKcal: profile.dailyTargetKcal,
     mealWindows: {
       breakfast: { start: windows.breakfast.start, end: windows.breakfast.end },
@@ -119,6 +126,8 @@ export function normalizeProfile(profile) {
     disclaimerAcceptedAt: profile.disclaimerAcceptedAt,
     updatedAt: profile.updatedAt
   }
+  if (hasWeight) normalized.weightKg = Math.round(profile.weightKg * 10) / 10
+  return normalized
 }
 
 export function validateProfile(profile) {
@@ -142,11 +151,10 @@ export function validateState(state, foods) {
   return true
 }
 
-export function createOnboardedState(weightKg, dailyTargetKcal, mealWindows, now) {
+export function createOnboardedState(dailyTargetKcal, mealWindows, now) {
   const timestamp = finiteNumber(now) && now > 0 ? now : Date.now()
   const profile = normalizeProfile({
     schemaVersion: STATE_SCHEMA_VERSION,
-    weightKg: Number(weightKg),
     dailyTargetKcal: Number(dailyTargetKcal),
     mealWindows,
     disclaimerAcceptedAt: timestamp,

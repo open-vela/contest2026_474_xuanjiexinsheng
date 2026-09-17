@@ -2,7 +2,7 @@
   <div class="page">
     <scroll class="content" scroll-y="true">
       <text class="title">首次设置</text>
-      <text class="subtitle">只需体重、饮食参考与餐段</text>
+      <text class="subtitle">设置饮食参考线与三餐时段</text>
 
       <div class="warning" if="{{storageStatus === 'corrupt'}}">
         <text class="warning-text">检测到损坏的本地数据，只有确认重建后才会覆盖。</text>
@@ -13,18 +13,13 @@
       </div>
 
       <div class="card">
-        <text class="label">体重（需主动滑动确认）</text>
-        <text class="number">{{weightLabel}} kg</text>
-        <slider min="25" max="250" step="1" value="{{weightValue}}" onchange="changeWeight"></slider>
-      </div>
-
-      <div class="card">
-        <text class="label">每日饮食参考目标</text>
+        <text class="label">每日饮食参考线</text>
         <text class="number orange">{{targetKcal}} kcal</text>
-        <text class="target-help">计划从食物中摄入的参考值，不是运动消耗任务，也不要求必须吃满。</text>
-        <text class="target-note">默认 2000 kcal；可在 1200–4000 kcal 间调整。</text>
+        <text class="target-help">2000 kcal 是成人食品营养标签采用的一日能量参考值，用于对照记录，不是个人饮食处方，也不要求必须吃满。</text>
+        <text class="target-note">{{targetReferenceText}}</text>
+        <text class="target-note">实际需要会随年龄、性别、体型和活动量变化。</text>
         <slider min="1200" max="4000" step="100" value="{{targetKcal}}" onchange="changeTarget"></slider>
-        <text class="target-warning" if="{{lowTarget}}">目标较低，建议在专业人员指导下设置。</text>
+        <text class="target-warning" if="{{lowTarget}}">参考线低于 1500 kcal，如用于控制体重，建议先咨询专业人员。</text>
         <text class="target-notice" if="{{targetAdjustmentNotice}}">{{targetAdjustmentNotice}}</text>
       </div>
 
@@ -36,7 +31,7 @@
       </div>
 
       <div class="card">
-        <text class="notice">食衡中的热量、MET 消耗和建议均为估算，仅供生活管理参考，不构成医疗、诊断、治疗或专业营养建议。如有疾病、过敏、孕期或饮食障碍等情况，请咨询合格专业人士。</text>
+        <text class="notice">食衡中的食物热量和建议均为估算，仅供生活管理参考，不构成医疗、诊断、治疗或专业营养建议。如有疾病、过敏、孕期或饮食障碍等情况，请咨询合格专业人士。</text>
         <div class="check-row"><input class="checkbox" type="checkbox" checked="{{accepted}}" onchange="changeAccepted" /><text class="check-label">我已阅读并接受</text></div>
       </div>
 
@@ -50,7 +45,7 @@
 <script>
 import router from '@system.router'
 import { FOODS } from '../../data/foods'
-import { defaultMealWindows, createOnboardedState, validateState, editableDailyTarget, isLowDailyTarget } from '../../common/state'
+import { defaultMealWindows, createOnboardedState, validateState, editableDailyTarget, isLowDailyTarget, dailyTargetReferenceText } from '../../common/state'
 import { loadState, saveState } from '../../common/state-store'
 
 const validateStoredState = state => validateState(state, FOODS)
@@ -64,10 +59,8 @@ function timeFromEvent(event) {
 export default {
   data: {
     storageStatus: 'empty',
-    weightValue: 70,
-    weightLabel: '请滑动',
-    weightConfirmed: false,
     targetKcal: 2000,
+    targetReferenceText: dailyTargetReferenceText(2000),
     lowTarget: false,
     targetAdjustmentNotice: '',
     windows: defaultMealWindows(),
@@ -82,10 +75,8 @@ export default {
       if (result.status === 'ok' && result.state.profile) {
         const profile = result.state.profile
         this.existingState = result.state
-        this.weightValue = profile.weightKg
-        this.weightLabel = String(profile.weightKg)
-        this.weightConfirmed = true
         this.targetKcal = editableDailyTarget(profile.dailyTargetKcal)
+        this.targetReferenceText = dailyTargetReferenceText(this.targetKcal)
         this.lowTarget = isLowDailyTarget(this.targetKcal)
         this.targetAdjustmentNotice = this.targetKcal === profile.dailyTargetKcal ? '' : '原目标超出当前编辑范围；只有保存后才会更新。'
         this.windows = profile.mealWindows
@@ -96,8 +87,7 @@ export default {
       }
     })
   },
-  changeWeight(event) { this.weightValue = event.progress; this.weightLabel = String(event.progress); this.weightConfirmed = true },
-  changeTarget(event) { this.targetKcal = event.progress; this.lowTarget = isLowDailyTarget(event.progress); this.targetAdjustmentNotice = '' },
+  changeTarget(event) { this.targetKcal = event.progress; this.targetReferenceText = dailyTargetReferenceText(event.progress); this.lowTarget = isLowDailyTarget(event.progress); this.targetAdjustmentNotice = '' },
   changeAccepted(event) { this.accepted = event.checked === true },
   confirmRebuild(event) { this.rebuildConfirmed = event.checked === true },
   setTime(meal, edge, event) {
@@ -117,12 +107,11 @@ export default {
   save() {
     if (this.saving) return
     this.errorMessage = ''
-    if (!this.weightConfirmed) { this.errorMessage = '请主动滑动体重滑杆完成确认'; return }
     if (!this.accepted) { this.errorMessage = '请阅读并接受免责声明'; return }
     if (this.storageStatus === 'corrupt' && !this.rebuildConfirmed) { this.errorMessage = '请先明确确认重建损坏数据'; return }
     if (this.storageStatus === 'unavailable') { this.errorMessage = '本地存储不可用，暂时无法保存'; return }
-    const fresh = createOnboardedState(this.weightValue, this.targetKcal, this.windows, Date.now())
-    if (!fresh) { this.errorMessage = '请检查体重、目标和餐段起止时间'; return }
+    const fresh = createOnboardedState(this.targetKcal, this.windows, Date.now())
+    if (!fresh) { this.errorMessage = '请检查参考线和餐段起止时间'; return }
     const state = this.existingState || fresh
     state.profile = fresh.profile
     state.lastMaintenanceAt = fresh.lastMaintenanceAt

@@ -3,7 +3,7 @@
     <div class="loading-view" if="{{!verificationMode}}"><text class="brand">食衡</text><text class="loading">正在读取本机设置…</text></div>
     <scroll class="verification" scroll-y="true" if="{{verificationMode}}">
       <text class="mode-label">OPENVELA 验证模式</text><text class="title">食衡 · 能力验证</text>
-      <div class="notice-card"><text class="card-title">当前 goldfish 缺少多页路由</text><text class="body-copy">本环境运行时未注册 system.router，因此无法进入食衡的七页流程。完整体验请在 AIoT 比赛模拟器验证。</text><text class="boundary">此模式不提供本地记餐操作。</text></div>
+      <div class="notice-card"><text class="card-title">当前 goldfish 缺少多页路由</text><text class="body-copy">本环境运行时未注册 system.router，因此无法进入食衡的六页流程。完整体验请在 AIoT 比赛模拟器验证。</text><text class="boundary">此模式不提供本地记餐操作。</text></div>
       <div class="advice-card"><text class="card-title">固定本地建议</text><text class="advice-copy">规律安排三餐，适量活动，并按身体感受调整今天的节奏。</text><text class="source-note">本地固定内容 · 仅供生活管理参考</text></div>
       <div class="ai-card"><text class="card-title">VelaClaw 无 Key 降级验证</text>
         <input class="ai-entry" if="{{aiStage === 'idle'}}" type="button" value="生成 AI 建议" onclick="previewAiAdvice"/>
@@ -53,7 +53,7 @@ export default {
   previewAiAdvice() {
     this.cancelAiRequest()
     try {
-      this.aiPreview = buildAiAdviceSummary({ intakeKcal: 0, exerciseKcal: 0, netKcal: 0, intakeTargetDeltaKcal: 0, mealCount: 0 })
+      this.aiPreview = buildAiAdviceSummary({ intakeKcal: 0, intakeTargetDeltaKcal: 0, mealCount: 0, streakDays: 0 })
       this.aiReply = ''; this.aiMessage = ''; this.aiStage = 'preview'
     } catch (error) { this.aiStage = 'failed'; this.aiMessage = 'AI 暂不可用，已保留本地建议' }
   },

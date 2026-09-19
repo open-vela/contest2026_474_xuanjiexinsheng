@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -96,9 +97,14 @@ def scan_secrets(paths: list[Path], audit: Audit) -> None:
 
 
 def find_log_validator(repo: Path) -> Path | None:
-    candidates = (
-        repo / ".claude/skills/contest-log-collector/tools/validate-log.py",
-        repo.parent / ".claude/skills/contest-log-collector/tools/validate-log.py",
+    configured = os.environ.get("OPENVELA_LOG_VALIDATOR")
+    candidates = tuple(
+        candidate for candidate in (
+            Path(configured) if configured else None,
+            repo / ".claude/skills/contest-log-collector/tools/validate-log.py",
+            repo.parent / ".claude/skills/contest-log-collector/tools/validate-log.py",
+        )
+        if candidate is not None
     )
     return next((candidate for candidate in candidates if candidate.is_file()), None)
 
@@ -115,6 +121,7 @@ def audit_logs(repo: Path, audit: Audit) -> None:
     result = subprocess.run(
         [sys.executable, str(validator), str(logs)], check=False,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+        encoding="utf-8", errors="replace",
     )
     audit.check(result.returncode == 0, "official AI log validation passed", "official AI log validation failed")
 

@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <scroll class="content" scroll-y="true">
+    <scroll class="content {{narrowLayout ? 'narrow-content' : ''}}" scroll-y="true">
       <text class="title">首次设置</text>
       <text class="subtitle">设置饮食参考线与三餐时段</text>
 
@@ -25,9 +25,9 @@
 
       <div class="card">
         <text class="card-title">三个默认餐段</text>
-        <div class="meal-row"><text>早餐</text><picker class="time-picker" type="time" selected="{{windows.breakfast.start}}" onchange="breakfastStart"></picker><text>—</text><picker class="time-picker" type="time" selected="{{windows.breakfast.end}}" onchange="breakfastEnd"></picker></div>
-        <div class="meal-row"><text>午餐</text><picker class="time-picker" type="time" selected="{{windows.lunch.start}}" onchange="lunchStart"></picker><text>—</text><picker class="time-picker" type="time" selected="{{windows.lunch.end}}" onchange="lunchEnd"></picker></div>
-        <div class="meal-row"><text>晚餐</text><picker class="time-picker" type="time" selected="{{windows.dinner.start}}" onchange="dinnerStart"></picker><text>—</text><picker class="time-picker" type="time" selected="{{windows.dinner.end}}" onchange="dinnerEnd"></picker></div>
+        <div class="meal-row"><text class="meal-name">早餐</text><div class="time-range"><div class="time-line"><text class="time-label">开始</text><picker class="time-picker" type="time" selected="{{windows.breakfast.start}}" onchange="breakfastStart"></picker></div><div class="time-line"><text class="time-label">结束</text><picker class="time-picker" type="time" selected="{{windows.breakfast.end}}" onchange="breakfastEnd"></picker></div></div></div>
+        <div class="meal-row"><text class="meal-name">午餐</text><div class="time-range"><div class="time-line"><text class="time-label">开始</text><picker class="time-picker" type="time" selected="{{windows.lunch.start}}" onchange="lunchStart"></picker></div><div class="time-line"><text class="time-label">结束</text><picker class="time-picker" type="time" selected="{{windows.lunch.end}}" onchange="lunchEnd"></picker></div></div></div>
+        <div class="meal-row"><text class="meal-name">晚餐</text><div class="time-range"><div class="time-line"><text class="time-label">开始</text><picker class="time-picker" type="time" selected="{{windows.dinner.start}}" onchange="dinnerStart"></picker></div><div class="time-line"><text class="time-label">结束</text><picker class="time-picker" type="time" selected="{{windows.dinner.end}}" onchange="dinnerEnd"></picker></div></div></div>
       </div>
 
       <div class="card">
@@ -47,6 +47,7 @@ import router from '@system.router'
 import { FOODS } from '../../data/foods'
 import { defaultMealWindows, createOnboardedState, validateState, editableDailyTarget, isLowDailyTarget, dailyTargetReferenceText } from '../../common/state'
 import { loadState, saveState } from '../../common/state-store'
+import { detectNarrowLayout } from '../../common/display-profile'
 
 const validateStoredState = state => validateState(state, FOODS)
 
@@ -58,6 +59,7 @@ function timeFromEvent(event) {
 
 export default {
   data: {
+    narrowLayout: true,
     storageStatus: 'empty',
     targetKcal: 2000,
     targetReferenceText: dailyTargetReferenceText(2000),
@@ -71,6 +73,7 @@ export default {
     existingState: null
   },
   onInit() {
+    detectNarrowLayout(value => { this.narrowLayout = value })
     loadState(validateStoredState, result => {
       if (result.status === 'ok' && result.state.profile) {
         const profile = result.state.profile
@@ -137,8 +140,12 @@ export default {
 .card-title { font-weight: bold; margin-bottom: 11px; }
 .number { color: #f4f1e8; font-size: 36px; font-weight: bold; margin: 7px 0; }
 .orange { color: #f4f1e8; }
-.meal-row { width: 100%; align-items: center; justify-content: space-between; color: #e5e1d8; font-size: 18px; margin: 7px 0; }
-.time-picker { width: 31%; height: 50px; color: #e5e1d8; font-size: 18px; }
+.meal-row { width: 100%; flex-direction: column; align-items: flex-start; color: #e5e1d8; font-size: 18px; margin: 7px 0; }
+.meal-name { color: #e5e1d8; font-size: 18px; margin-bottom: 2px; }
+.time-range { width: 100%; flex-direction: column; }
+.time-line { width: 100%; align-items: center; margin-bottom: 3px; }
+.time-label { width: 22%; color: #858681; font-size: 15px; }
+.time-picker { width: 31%; height: 50px; color: #e5e1d8; font-size: 17px; }
 .check-row { width: 100%; min-height: 44px; align-items: center; margin-top: 9px; }
 .checkbox { width: 44px; height: 44px; }
 .check-label { color: #c7c4bc; font-size: 18px; margin-left: 9px; }
@@ -150,4 +157,5 @@ export default {
 .error { text-align: center; margin: 4px 0 11px 0; }
 .primary { width: 100%; height: 58px; border-radius: 29px; background-color: #f28a32; color: #17120e; font-size: 21px; font-weight: bold; }
 .bottom-space { height: 34px; }
+.narrow-content{width:82%;padding-left:0;padding-right:0;margin-left:4%}
 </style>

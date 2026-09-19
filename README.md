@@ -56,11 +56,12 @@ npm run build
 npm run release
 ```
 
-签名私钥、API Key 和 Token 均不得提交到仓库。仓内当前生产包是功能定版前的 RC1；新版界面审核通过后会重新签名生成最终包并更新下列哈希：
+签名私钥、API Key 和 Token 均不得提交到仓库。仓内生产包由最终响应式源码重新签名生成，并已完成 ZIP、CERT、manifest、六页 bundle、日志和秘密审计：
 
 ```text
 quickapp/shihe/releases/com.openvela.contest2026.team474.shihe.release.1.0.0.rpk
-SHA-256: 3e26977cf4d9c8696d5823b07ace1c9699de89264ec8ad86070f2c7c21b5728e
+文件大小: 84,797 bytes
+SHA-256: 341da1032b20fcbd920bf66d89ed2f551be60f8f7f185a8e248026f61ee1c8ee
 ```
 
 ## AIoT 比赛模拟器运行
@@ -112,7 +113,7 @@ python3 .claude/skills/vela-quickapp-release-auditor/scripts/audit_release.py \
   --rpk quickapp/shihe/releases/com.openvela.contest2026.team474.shihe.release.1.0.0.rpk
 ```
 
-审计覆盖源码与包内 manifest 一致性、六页 bundle、RPK ZIP 完整性、生产签名标记、许可证、AI 日志、自建 Skill，以及高置信度密钥和私钥模式。
+审计覆盖源码与包内 manifest 一致性、六页 bundle、RPK ZIP 完整性、生产签名标记、许可证、AI 日志、自建 Skill，以及高置信度密钥和私钥模式。截止日审计使用官方日志验证器复核 34 份 JSONL、1,383 个事件，结果为 `0 failures / 0 warnings`。
 
 ## AI Coding 使用说明
 

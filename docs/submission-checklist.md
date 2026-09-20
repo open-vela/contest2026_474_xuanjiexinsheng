@@ -9,24 +9,24 @@
 | 项目 | 当前证据 | 状态 |
 | --- | --- | --- |
 | 快应用源码工程 | `quickapp/shihe/src/`、`package.json`、`package-lock.json`、`src/manifest.json`、测试与构建脚本 | 完成 |
-| production `release.rpk` | 最终响应式源码已重新签名生成；84,797 bytes，SHA-256 `341da103...c8ee`；ZIP、CERT、manifest、六页 bundle 与秘密扫描通过 | 完成；待 AIoT clean-install 冒烟 |
+| production `release.rpk` | 最终响应式源码已重新签名生成；84,803 bytes，SHA-256 `5de212c7...62502`；ZIP、CERT、manifest、六页 bundle、秘密扫描、AIoT clean-install 与 20 分钟回归通过 | 完成 |
 | AI Coding 日志 | `logs/AuroraZW/` 当前 34 份 JSONL、1,383 个事件，2026-09-20 使用官方 `validate-log.py` 复核为 `ALL OK` | 完成 |
 | 至少一个有效 Skill | `.claude/skills/vela-quickapp-release-auditor/` 已实际审计最终 RPK，结果 0 failures / 0 warnings | 完成 |
-| 作品介绍文档 | 官方模板与固定信息已核对，最终截图已归档 | 正在按官方模板生成 DOCX/PDF |
-| 不超过 5 分钟演示视频 | 已锁定真实操作画面加字幕的兜底方案 | 技术报告完成后立即制作并播放复核 |
+| 作品介绍文档 | 严格按官方模板完成 12 页 A4 DOCX/PDF；信息表、摘要及 3.1—3.7 完整，DOCX 内部关系零缺失，PDF 逐页检查通过 | 完成 |
+| 不超过 5 分钟演示视频 | 真实模拟器截图与字幕版，H.264、1920×1080、270 秒；已替换最终窄屏证据并完成全文件解码 | 完成 |
 | 专属仓地址 | `https://github.com/open-vela/contest2026_474_xuanjiexinsheng` | 已确定 |
 
 ## 2. GitHub 提交链
 
 | 项目 | 当前状态 | 关闭条件 |
 | --- | --- | --- |
-| fork 开发分支 | 远程为 `d94e019`；最终窄屏适配、RPK与发布证据正在本分支收口 | 使用 Signed-off-by 提交并推送 |
-| Signed-off-by | 当前 RC1 提交含 `AuroraZW <3053750681@qq.com>` | 最终新增提交继续使用 `git commit -s` |
-| 最终 PR | 尚未发起 | PDF、界面与稳定性通过后发向团队专属仓 `dev-ai-contest-2026` |
-| CLA / CI | 预检阶段已签署并通过；最终 PR 尚未检查 | 最终 PR 的 checks 与 `cla/signature` 全绿 |
-| 自行 review / 合入 | 尚未执行 | 最终 PR 通过后合入团队专属仓 |
-| 独立复现 | 尚未执行最终版本 | 9 月 19 日从团队仓新 clone，按 README 复现 |
-| 官方提交与回执 | 尚未执行 | 9 月 19 日中午前提交仓库、PDF、视频并保存回执 |
+| fork 开发分支 | `AuroraZW:feat/shihe-mvp` 已推送最终 Signed-off-by 提交 | 完成 |
+| Signed-off-by | 最终发布提交 `1499057` 含 `AuroraZW <3053750681@qq.com>` | 完成 |
+| 最终 PR | [PR #3](https://github.com/open-vela/contest2026_474_xuanjiexinsheng/pull/3) 已发向团队专属仓 `dev-ai-contest-2026` | 完成 |
+| CLA / CI | PR #3 的 `cla/signature` / `cla-check` 为 success | 完成 |
+| 自行 review / 合入 | PR #3 已以仓库允许的 rebase 方式合入，官方分支提交为 `9a5986d` | 完成 |
+| 独立复现 | 已从官方分支全新 clone：`9a5986d`；源码、六页、RPK、哈希、34 份日志、Skill 与 LICENSE 均存在，日志验证 `ALL OK` | 完成 |
+| 官方提交与回执 | 官网尚未上传 | 用户上传最终 ZIP 与仓库地址后保存回执 |
 
 ## 3. 发布质量门禁
 
@@ -37,10 +37,10 @@
 - [x] 最终定版 production RPK 重新生成，并通过 ZIP、CERT、manifest、六页 bundle、日志和秘密审计。
 - [x] 已删除手动运动补录和净摄入；当前无可靠系统步数/运动记录/活动热量接口，不伪造自动同步。
 - [x] 六页功能与主视觉冻结；336×480 窄屏阻断问题已修复并完成逐页检查。
-- [ ] 使用页面标题识别重新执行有效的 20 分钟稳定性回归；前一版只检查截图大小且误滑出应用，已作废。
+- [x] 最终 production RPK 连续运行 1,200.4 秒，21/21 检查点保持“食衡 · 今日”，运行问题计数为 0。
 - [ ] VelaClaw 有 Key 成功路径由用户私下验证；此项失败不阻塞 P0 发布。
-- [ ] PDF 根据用户意见修订并定稿。
-- [ ] 视频在用户明确批准后制作并控制在 5 分钟以内。
+- [x] 官方模板 DOCX/PDF 已定稿，12 页逐页渲染检查通过，信息表无“待填”。
+- [x] 字幕版 H.264 演示视频已制作，时长 270 秒（小于 5 分钟），ffprobe 检查和全文件解码均通过。
 
 ## 4. 安全、版权与范围
 
@@ -53,8 +53,5 @@
 
 ## 5. 当前最短关键路径
 
-1. 对最终 RPK 执行 AIoT clean-install 冒烟，并保留既有有效 20 分钟稳定性证据。
-2. 使用 Signed-off-by 提交、推送，立即完成团队专属仓 PR 与合入。
-3. 严格按官方模板生成并检查技术报告 DOCX/PDF。
-4. 制作不超过 5 分钟的字幕版真实功能演示视频并完整播放复核。
-5. 从团队仓独立复核，生成官方命名压缩包并完成官网提交。
+1. 将最终验证记录通过补充 PR 合入团队专属仓。
+2. 用户立即在官网上传已校验的官方命名 ZIP、填写官方团队仓地址并保存回执。

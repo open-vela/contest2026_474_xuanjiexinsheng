@@ -54,7 +54,7 @@ Windows 使用本地且被 Git 忽略的签名材料执行 `npm run release` 成
 - 实例：`shihe-health-watch`
 - 466 × 466 圆屏，density 320
 
-历史 RC1 production RPK 通过 `pm install` 安装，并通过 `am start com.openvela.contest2026.team474.shihe` 启动。当时版本的首次设置、首页、记餐、确认和历史页面均能打开；重启后设置与业务记录保留。最终生产包已完成静态发布审计，AIoT clean-install 结果在截止日最终复核后补记。
+历史 RC1 production RPK 通过 `pm install` 安装，并通过 `am start com.openvela.contest2026.team474.shihe` 启动。当时版本的首次设置、首页、记餐、确认和历史页面均能打开；重启后设置与业务记录保留。最终 production RPK 已在 `xiaomi_band_pro` 336×480 比赛健康镜像完成 clean-install 与启动：首页标题、摄入卡、主操作和 `service.health` 官方 Mock 均正常显示。
 
 2026-09-17 使用最终可用性源码生成的 debug RPK 重新安装并清空旧状态后，实测结果如下：
 
@@ -65,7 +65,7 @@ Windows 使用本地且被 Git 忽略的签名材料执行 `npm run release` 成
 - 最近 7 天页面显示有记录天数 `1/7` 和有记录日平均 `676 kcal`，每日明细只保留餐数和摄入。
 - `service.health` 本轮观察到心率/血氧/压力为 101/99/40，并明确标注比赛模拟器中为官方 Mock、不得用于热量计算或诊断。
 
-本轮审核截图保存在工作区外的证据目录，待用户集中确认后再选取不含桌面背景的页面截图进入 `docs/screenshots/`。
+最终窄屏首页证据已归档到 `docs/screenshots/08-band-336-home.png`；其余关键页面截图沿用已通过审核的比赛健康模拟器证据。
 
 `service.health` 实际订阅得到官方 Mock 数据。历次观察包括 HEART_RATE/SPO2/STRESS 为 81/99/41、89/98/42、108/99/12、120/97/37，以及 RC1 验收时的 97/98/34。数值仅证明模拟器 Mock 链路，不代表真实健康测量。压力较高时本地建议会切换为一分钟呼吸提醒；离开首页后退订，返回首页重新建立一组订阅。
 
@@ -73,9 +73,9 @@ Windows 使用本地且被 Git 忽略的签名材料执行 `npm run release` 成
 
 ### 20 分钟稳定性
 
-历史有效复测持续 1,566.5 秒，21 个页面检查点均匹配预期页面标题；未观察到应用崩溃、黑屏或数据损坏。该结果完成于响应式窄屏补丁前，补丁后的最终包需再完成一次聚焦三尺寸冒烟测试；报告不把历史结果表述成最终包重跑结果。
+最终 production RPK 在真实 `xiaomi_band_pro` 336×480 skin 上连续运行 1,200.4 秒，共采集 21 个检查点。首尾及中间截图均保持“食衡 · 今日”页面，21/21 PNG 有效，运行日志未发现 crash、fatal、uncaught、exception 或 JS error；未观察到黑屏、数据损坏或退回系统表盘。
 
-稳定性脚本每轮显式启动食衡并验证页面标题，避免把系统表盘误计为通过。最终发布仍以最新包的三尺寸冒烟和 clean-install 为停止线。
+该结果与此前 1,566.5 秒历史有效复测分开记录，不用旧版本结果冒充最终包。最终包同时完成 336×480 clean-install，466×466 比赛健康模拟器关键流程与 480×480 方屏布局检查。
 
 ## 4. openvela goldfish
 
@@ -127,4 +127,4 @@ RC1 production RPK 也已完成实际验证：RPK 解包为 14 个文件并推�
 - VelaClaw 有 Key 成功回复需要用户私下完成一次最终验证；失败时保留本地建议，不阻塞发布。
 - `system.alarm` 未纳入发布基线；餐时胶囊在应用打开或恢复时判断。
 - 初赛不依赖真机、系统运动数据同步、手机伴侣或云服务。
-- 336×480 窄屏、466×466 圆屏和 480×480 方屏均已完成布局检查；最终包仍须完成 AIoT clean-install 冒烟，VM 不可用时不得把历史 goldfish 结果写成最终包复验。
+- 336×480 窄屏、466×466 圆屏和 480×480 方屏均已完成布局检查；最终 production RPK 已完成 AIoT 比赛健康镜像 clean-install 和 20 分钟稳定性回归。VM 不可用时不把历史 goldfish 结果写成最终包复验。

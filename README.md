@@ -60,8 +60,8 @@ npm run release
 
 ```text
 quickapp/shihe/releases/com.openvela.contest2026.team474.shihe.release.1.0.0.rpk
-文件大小: 84,797 bytes
-SHA-256: 341da1032b20fcbd920bf66d89ed2f551be60f8f7f185a8e248026f61ee1c8ee
+文件大小: 84,803 bytes
+SHA-256: 5de212c75943e345a207c830e98c8ad373cfa4625d6535dc380bbf020ea62502
 ```
 
 ## AIoT 比赛模拟器运行

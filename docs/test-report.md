@@ -7,8 +7,8 @@
 - 包名：`com.openvela.contest2026.team474.shihe`
 - 版本：`1.0.0`（`versionCode: 1`）
 - 最终生产包：`com.openvela.contest2026.team474.shihe.release.1.0.0.rpk`
-- 文件大小：84,797 bytes
-- SHA-256：`341da1032b20fcbd920bf66d89ed2f551be60f8f7f185a8e248026f61ee1c8ee`
+- 文件大小：84,803 bytes
+- SHA-256：`5de212c75943e345a207c830e98c8ad373cfa4625d6535dc380bbf020ea62502`
 
 本报告只记录已经实际完成的验证。最终生产包已由当前响应式源码重新生成并完成静态发布审计；用户私下配置 `tp-` Key 后的 VelaClaw 成功回复尚未作为通过项，它不是 P0 发布门禁。
 

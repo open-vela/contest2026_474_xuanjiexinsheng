@@ -2,7 +2,7 @@
 
 存放你在开发中与 AI 工具的对话日志，和作品代码一并提交。
 
-> 本目录现在是**示例**，请替换成你自己导出的真实日志（删掉示例的 `your-github-login/` 目录）。
+`logs/AuroraZW/` 保存本项目由比赛 hook 采集的真实 AI Coding 日志；仓库中不存在 `your-github-login/` 示例占位目录。34 份 JSONL、1,383 个事件已于 2026-09-20 使用官方 `validate-log.py` 校验为 `ALL OK`。
 
 ## 目录结构
 
